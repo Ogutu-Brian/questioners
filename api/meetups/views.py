@@ -353,8 +353,6 @@ class RspvPostView(APIView):
             queryset = Meetup.objects.all()
             request.data['responder'] = request.user
             serializer = RsvpSerializer(data=request.data)
-            # import pdb
-            # pdb.set_trace()
 
             if serializer.is_valid():
                 Rsvp.objects.update_or_create(

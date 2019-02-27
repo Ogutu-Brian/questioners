@@ -415,8 +415,54 @@ def schema_view_swagger(request):
                     ],
                     description='Fetching questions on a specific meetup'
                 ),
+            },
+            'Answers': {
+                'new answer': coreapi.Link(
+                    url='/api/',
+                    action='POST',
+                    fields=[
+                        coreapi.Field(
+                            name='body',
+                            required=True,
+                            location='form',
+                            description='A description of the answer'
+                        ),
+                    ],
+                    description='Create a new Answer'
+                ),
+                'update existing answer': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}',
+                    action='PUT',
+                    fields=[
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='A specific meetup id of an existing meetup'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='A specific question id of an existing question'
+                        ),
+                        coreapi.Field(
+                            name='answerId',
+                            required=True,
+                            location='path',
+                            description='A specific answer id of an existing answer'
+                        ),
+                        coreapi.Field(
+                            name='body',
+                            required=True,
+                            location='form',
+                            description='A new description of the answer'
+                        )
+                    ],
+                    description = 'Update an existing answer'
+                ),
             }
-
+            
         }
     )
     return response.Response(schema)
