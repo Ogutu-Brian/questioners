@@ -18,6 +18,9 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls import include
 from rest_framework.schemas import get_schema_view
+# Import swagger documentation
+from rest_framework_swagger.views import get_swagger_view
+
 from rest_framework.documentation import include_docs_urls
 from django.conf.urls.static import static
 
@@ -29,6 +32,8 @@ admin.site.site_header = settings.ADMIN_SITE_HEADER
 router = DefaultRouterWithAPIViews()
 router.register('api/auth', AuthApiListView)
 
+schema_view_swagger = get_swagger_view(title='Questioner API')
+
 schema_view = get_schema_view(title=settings.API_BROWSER_HEADER, public=True)
 doc_urls = include_docs_urls(title=settings.API_BROWSER_HEADER)
 api_browser_urls = include('rest_framework.urls')
@@ -38,6 +43,9 @@ urlpatterns = [
     path('api/', doc_urls),
     path('api/auth/', auth_urls),
     path('api/schema/', schema_view),
+
+    path('api/schema/swagger/', schema_view_swagger),
+
     path('api/browser/', api_browser_urls),
     path('api/admin/', admin.site.urls),
 ]
