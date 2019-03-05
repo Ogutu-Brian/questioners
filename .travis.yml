@@ -9,7 +9,7 @@ env:
   - DJANGO=2.1.7 DB=postgresql
 
 before_install:
-  - export DJANGO_SETTINGS_MODULE=api/config.settings
+  - export DJANGO_SETTINGS_MODULE=config.settings
   - export PYTHONPATH="/home/travis/build/Ogutu-Brian/questioners"
   - export DJANGO_SECRET_KEY="secret key"
   - export PIP_USE_MIRRORS=true
