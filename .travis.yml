@@ -4,6 +4,15 @@ python:
   - 3.6
 
 services: postgresql
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+env:
+  global:
+  - PGPORT=5433
 
 env:
   - DJANGO=2.1.7 DB=postgresql
