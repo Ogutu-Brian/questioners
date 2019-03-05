@@ -29,6 +29,7 @@ script:
 - python api/manage.py makemigrations
 - python api/manage.py migrate
 - python api/manage.py test
+- pytest --cov-report term-missing --cov=api
 
 
 after_success:
