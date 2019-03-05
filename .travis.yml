@@ -19,6 +19,7 @@ before_install:
 install:
   - pip install -r api/requirements.txt
   - pip install coveralls
+  - pip install pytest-cov
 
 before_script:
   - source .travis.sh
