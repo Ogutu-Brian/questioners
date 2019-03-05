@@ -21,9 +21,9 @@ install:
   - pip install coveralls
 
 before_script:
-- psql -c "create user django WITH PASSWORD 'password';" -U postgres
-- psql -c "create database drf;" -U postgres
-
+  - source .travis.sh
+  - psql -c "create user django WITH PASSWORD 'password';" -U postgres
+  - psql -c "create database drf;" -U postgres
 
 script:
 - python api/manage.py test
