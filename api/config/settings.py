@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'macros',
     'users',
+    'meetups',
     'djoser',
     'mail_templated',
     'utils',
@@ -73,6 +74,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
+    'rest_framework_swagger',
 ]
 
 # Rest Framework Settings
@@ -321,6 +323,8 @@ MOBILE_ACTIVATION_TOKEN_LENGTH = 6
 MOBILE_ACTIVATION_TOKEN_HASH_ALGORITHM = 'sha256'
 
 # Test Settings
+TEST_PAYLOAD_PATH = str(API_DIR) + '/utils/test/'
+TEST_DATA_PATH = TEST_PAYLOAD_PATH + 'data/'
 
 # Site Reliability Team
 # https://docs.djangoproject.com/en/2.0/ref/settings/#admins

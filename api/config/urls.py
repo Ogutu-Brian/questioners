@@ -38,10 +38,11 @@ schema_view = get_schema_view(title=settings.API_BROWSER_HEADER, public=True)
 doc_urls = include_docs_urls(title=settings.API_BROWSER_HEADER)
 api_browser_urls = include('rest_framework.urls')
 auth_urls = include('auth.urls')
-
+meetup_urls = include('meetups.urls')
 urlpatterns = [
     path('api/', doc_urls),
     path('api/auth/', auth_urls),
+    path('api/', meetup_urls),
     path('api/schema/', schema_view),
 
     path('api/schema/swagger/', schema_view_swagger),

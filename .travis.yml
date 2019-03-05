@@ -21,11 +21,12 @@ before_script:
   - psql -c "ALTER USER django CREATEDB;" -U postgres
 
 script:
-- python api/manage.py makemigrations
-- python api/manage.py migrate
-- python api/manage.py test
-- coverage run api/manage.py test
-- coverage report -m
+- cd api/
+- python manage.py makemigrations
+- python manage.py migrate
+- python manage.py test
+- coverage run --source='.' manage.py test
+- coverage report 
 
 
 after_success:

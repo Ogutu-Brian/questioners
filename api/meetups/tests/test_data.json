@@ -1,0 +1,29 @@
+{
+    "meetup_data": {
+        "title": "Topological Spaces",
+        "body": "We will introduce and discuss topology",
+        "location": "MIT",
+        "scheduled_date": "2019-09-04 06:00Z",
+        "tags": [
+            "math", "analysis"
+        ],
+        "images": [
+            "http://herokuquestioner.com/images/img.jpg",
+            "http://herokuquestioner2.com/imagesdir/img.jpg"
+        ]
+    },
+    "user_data": {
+        "user": {
+            "email": "test@gmail.com",
+            "name": "test",
+            "nick_name": "tester",
+            "password": "password"
+        },
+        "admin": {
+            "email": "admin@gmail.com",
+            "name": "admin",
+            "nick_name": "Administrator",
+            "password": "password"
+        }
+    }
+}
