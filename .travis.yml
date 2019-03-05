@@ -13,6 +13,7 @@ before_install:
   - export PYTHONPATH="/home/travis/build/Ogutu-Brian/questioners"
   - export DJANGO_SECRET_KEY="secret key"
   - export DATABASE_URL='postgres:///drf'
+  - export SITE_NAME='Questioner'
   - export PIP_USE_MIRRORS=true
 
 install:
