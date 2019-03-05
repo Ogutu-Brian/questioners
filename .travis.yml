@@ -1,0 +1,20 @@
+language: python
+
+install:
+  - pip install -r api/requiremts.txt
+  - pip install coveralls
+
+before_script:
+- psql -c "create user django WITH PASSWORD 'password';" -U postgres
+- psql -c "create database drf;" -U postgres
+
+script:
+  - DATABASE_URL='postgres:///drf'
+  - DJANGO_SECRET_KEY='secret key'
+
+
+after_success:
+  - coveralls
+
+cache:
+  - pip
