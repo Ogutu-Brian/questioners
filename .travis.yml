@@ -19,6 +19,7 @@ before_install:
 install:
   - pip install -r api/requirements.txt
   - pip install coveralls
+  - pip install pytest-django
   - pip install pytest-cov
 
 before_script:
@@ -30,7 +31,7 @@ script:
 - python api/manage.py makemigrations
 - python api/manage.py migrate
 - python api/manage.py test
-- pytest --cov-report term-missing --cov=api
+- pytest --cov=api
 
 
 after_success:
