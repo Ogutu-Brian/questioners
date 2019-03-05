@@ -65,6 +65,11 @@
  ```
   $ cp .env-example .env
  ```
+ - Installing Postgres
+```
+ $ sudo apt-get install postgresql postgresql-contrib
+
+```
  - Create postgres database
  ```
   $ sudo su postgres
