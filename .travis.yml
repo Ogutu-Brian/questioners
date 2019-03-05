@@ -1,0 +1,34 @@
+language: python
+
+python:
+  - 3.6
+addons:
+  postgresql: "9.4"
+
+services: postgresql
+
+env:
+  - DJANGO=2.1.7 DB=postgresql
+
+install:
+  - pip install -r api/requirements.txt
+  - pip install coveralls
+
+
+before_script:
+  - psql -c "create user django WITH PASSWORD 'password';" -U postgres
+  - psql -c "create database drf;" -U postgres
+
+script:
+- python api/manage.py makemigrations
+- python api/manage.py migrate
+- python api/manage.py test users
+- coverage run api/manage.py test
+- coverage report -m
+
+
+after_success:
+  - coveralls
+
+cache:
+  - pip
