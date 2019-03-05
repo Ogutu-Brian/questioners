@@ -9,7 +9,7 @@ env:
   - DJANGO=2.1.7 DB=postgresql
 
 install:
-  - pip install -r api/requiremts.txt
+  - pip install -r api/requirements.txt
   - pip install coveralls
 
 before_script:
