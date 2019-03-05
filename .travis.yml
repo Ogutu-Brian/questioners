@@ -8,6 +8,12 @@ services: postgresql
 env:
   - DJANGO=2.1.7 DB=postgresql
 
+before_install:
+  - export DJANGO_SETTINGS_MODULE=api/config.settings
+  - export PYTHONPATH="/home/travis/build/Ogutu-Brian/questioners"
+  - export DJANGO_SECRET_KEY="secret key"
+  - export PIP_USE_MIRRORS=true
+
 install:
   - pip install -r api/requirements.txt
   - pip install coveralls
@@ -15,6 +21,9 @@ install:
 before_script:
 - psql -c "create user django WITH PASSWORD 'password';" -U postgres
 - psql -c "create database drf;" -U postgres
+
+
+script:
 - python api/manage.py test
 
 
