@@ -30,7 +30,7 @@ script:
 - python api/manage.py makemigrations
 - python api/manage.py migrate
 - python api/manage.py test --verbosity=2
-
+- coverage report -m
 
 
 after_success:
