@@ -12,6 +12,7 @@ before_install:
   - export DJANGO_SETTINGS_MODULE=config.settings
   - export PYTHONPATH="/home/travis/build/Ogutu-Brian/questioners"
   - export DJANGO_SECRET_KEY="secret key"
+  - export DATABASE_URL='postgres:///drf'
   - export PIP_USE_MIRRORS=true
 
 install:
