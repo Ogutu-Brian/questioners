@@ -19,8 +19,7 @@ before_install:
 install:
   - pip install -r api/requirements.txt
   - pip install coveralls
-  - pip install pytest-django
-  - pip install pytest-cov
+
 
 before_script:
   - source .travis.sh
@@ -30,8 +29,8 @@ before_script:
 script:
 - python api/manage.py makemigrations
 - python api/manage.py migrate
-- python api/manage.py test
-- pytest --cov=api
+- python api/manage.py test --verbosity=2
+
 
 
 after_success:
