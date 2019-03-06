@@ -11,6 +11,7 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.authentication import get_authorization_header
 from rest_framework.views import APIView
+from rest_framework_jwt.settings import api_settings
 
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
@@ -31,6 +32,8 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 User = get_user_model()
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 
 class AuthApiListView(views.APIView):
@@ -190,11 +193,16 @@ class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     def _action(self, serializer):
-        token = utils.login_user(self.request, serializer.user)
-        token_serializer_class = serializers.TokenSerializer
-        return Response(data=token_serializer_class(token).data)
+        token = {
+                # using drf jwt utility functions to generate a token
+                "auth_token": jwt_encode_handler(
+                    jwt_payload_handler(serializer.user)
+                )}
+        token_serializer = serializers.TokenSerializer(data=token)
+        token_serializer.is_valid()
+        return Response(token_serializer.data)
 
-
+ 
 class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
