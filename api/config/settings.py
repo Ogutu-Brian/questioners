@@ -78,7 +78,6 @@ INSTALLED_APPS = [
     # django rest framework swagger documentation
     'rest_framework_swagger',
 =======
-    'whitenoise.runserver_nostatic',
 >>>>>>> [chore #164275574]Updates Procfile
 ]
 
