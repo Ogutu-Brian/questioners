@@ -73,12 +73,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
-<<<<<<< HEAD
-
-    # django rest framework swagger documentation
-    'rest_framework_swagger',
-=======
->>>>>>> [chore #164275574]Updates Procfile
 ]
 
 # Rest Framework Settings
