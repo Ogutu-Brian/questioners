@@ -61,6 +61,15 @@
  ```
   $ copy .env-example .env
  ```
+ - Copy .env-example to .env and set config-In Ubuntu and Kali linux
+ ```
+  $ cp .env-example .env
+ ```
+ - Installing Postgres
+```
+ $ sudo apt-get install postgresql postgresql-contrib
+
+```
  - Create postgres database
  ```
   $ sudo su postgres
