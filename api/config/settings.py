@@ -55,6 +55,7 @@ USE_X_FORWARDED_HOST = env.bool('DJANGO_USE_X_FORWARDED_HOST', default=True)
 # https://docs.djangoproject.com/en/2.0/ref/settings/#installed-apps
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
