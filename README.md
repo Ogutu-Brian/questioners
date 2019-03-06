@@ -1,5 +1,61 @@
 # Questioner
 
+## Prerequisites
+
+## 1. PostgreSQL
+```
+PostgreSQL is a powerful, open source object-relational database system with over 30 years of active development that has earned it a strong reputation for reliability, feature robustness, and performance. 
+```
+
+### Installing Postgres
+  - ### For Mac
+
+    [Postgres App](http://www.postgresapp.com/)
+
+  - ### For Linux
+  
+    - For APT systems (Ubuntu, Debian, Mint, Etc)
+      ```
+      sudo apt-get install postgresql
+      ```
+  - ### For Arch Linux
+      ```
+      sudo pacman -S postgresql
+      ```
+
+  - ### For YUM installations (Fedora / Red Hat / CentOS / Scientific Linux)
+
+    (Example used is for PostgreSQL 9.2 on CentOS 6.4 x64)
+
+    - Head over to [PostgreSQL Yum Repository](http://yum.postgresql.org/)
+    - Select the version of PostgreSQL that you want to install and then your OS, version and architecture.
+    - Download the RPM for your platform (using the link from step 2)
+      ```
+      curl -O http://yum.postgresql.org/9.2/redhat/rhel-6-x86_64/pgdg-centos92-9.2-6.noarch.rpm
+      ```
+
+    - Install the RPM
+      ```
+      rpm -ivh pgdg-centos92-9.2-6.noarch.rpm
+      ```
+
+    - Do a quick search which will show you available packages for postgres
+      ```
+      yum list postgres*
+      ```
+
+      Note: It will probably list older versions as well, make sure to select proper version that you want to install and all the packages are of same version i.e server, client, contrib 
+
+    - Install Packages as per choice
+      ```
+      yum install postgresql92-server.x86_64 postgresql92-contrib.x86_64 postgresql92-devel.x86_64
+      ```
+  - ### For Windows
+
+    [Windows Installer](http://www.enterprisedb.com/products-services-training/pgdownload#windows)
+
+
+
 ## Initial Auth Endpoints
  - User Signup
  ```
@@ -65,11 +121,7 @@
  ```
   $ cp .env-example .env
  ```
- - Installing Postgres
-```
- $ sudo apt-get install postgresql postgresql-contrib
-
-```
+ 
  - Create postgres database
  ```
   $ sudo su postgres
