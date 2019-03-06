@@ -3,3 +3,4 @@ show_missing = false
 precision = 2
 omit = *migrations*
     *.venv*
+    */home/travis/virtualenv*
