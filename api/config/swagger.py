@@ -268,6 +268,57 @@ def schema_view_swagger(request):
                     action='GET',
                     description='View upcoming meetups'
                 )
+            },
+            'Meetups':{
+                'update': coreapi.Link(
+                    url= '/api/update/{id}',
+                    action= 'PUT',
+                    fields= [
+                        coreapi.Field(
+                            name = 'id',
+                            required = True,
+                            location = 'path',
+                            description = 'The meetup id'
+                        ),
+                        coreapi.Field(
+                            name = 'title',
+                            required = False,
+                            location = 'form',
+                            description = 'A title for the meetup'
+                        ),
+                        coreapi.Field(
+                            name = 'body',
+                            required = False,
+                            location = 'form',
+                            description = 'The body of the meetup'
+                        ),
+                        coreapi.Field(
+                            name = 'location',
+                            required = False,
+                            location = 'form',
+                            description = 'Where the meetup will be held'
+                        ),
+                        coreapi.Field(
+                            name = 'scheduled_date',
+                            required = False,
+                            location = 'form',
+                            description = 'When the meetup will be held. Must be valid date and time'
+                        ),
+                        coreapi.Field(
+                            name = 'tags',
+                            required = False,
+                            location = 'form',
+                            description = 'Meetup tags'
+                        ),
+                        coreapi.Field(
+                            name = 'images',
+                            required = False,
+                            location = 'form',
+                            description = 'Meetup image urls'
+                        )
+                    ],
+                    description = 'Updating a meetup'   
+                )
             }
         }
     )

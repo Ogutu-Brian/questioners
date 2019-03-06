@@ -41,3 +41,15 @@ class FetchMeetupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meetup
         fields = '__all__'
+
+
+class UpdateMeetupSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating meetups
+    """
+    tags = serializers.StringRelatedField(many=True)
+    image_url = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Meetup
+        fields = '__all__'
