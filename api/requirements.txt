@@ -54,7 +54,6 @@ pytest==4.3.0
 pytest-cov==2.6.1
 pylint==2.3.1
 PyJWT==1.7.1
-pylint==2.3.0
 pytz==2018.5
 redis==2.10.6
 requests==2.20.0
