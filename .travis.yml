@@ -23,7 +23,6 @@ script:
 - python api/manage.py makemigrations
 - python api/manage.py migrate
 - python api/manage.py test users
-- coverage run --source='.' api/manage.py test users
 - coverage report -m
 
 
