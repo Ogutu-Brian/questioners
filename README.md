@@ -1,5 +1,10 @@
 # Questioner
 
+## Prerequisites
+
+- PostgreSQL
+
+
 ## Initial Auth Endpoints
  - User Signup
  ```
@@ -65,6 +70,7 @@
  ```
   $ cp .env-example .env
  ```
+ 
  - Create postgres database
  ```
   $ sudo su postgres
