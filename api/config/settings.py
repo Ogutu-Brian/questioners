@@ -72,6 +72,9 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
+
+    # django rest framework swagger documentation
+    'rest_framework_swagger',
 ]
 
 # Rest Framework Settings
