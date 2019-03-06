@@ -79,9 +79,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
-    'oauth2_provider',
-    'social_django',
-    'rest_framework_social_oauth2',
+
+    # django rest framework swagger documentation
     'rest_framework_swagger',
     'django_rest_passwordreset',
 ]
