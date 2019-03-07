@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 import datetime
+
+import django_heroku
 import logging
 import environ
 from django.utils.translation import gettext_lazy as _
@@ -146,6 +148,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -513,3 +516,4 @@ SWAGGER_SETTINGS = {
       }
   }
 }
+django_heroku.settings(locals())
