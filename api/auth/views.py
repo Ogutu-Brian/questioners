@@ -259,7 +259,11 @@ class PasswordResetView(utils.ActionViewMixin, generics.GenericAPIView):
     def _action(self, serializer):
         for user in self.get_users(serializer.data['email']):
             self.send_password_reset_email(user)
+<<<<<<< HEAD
         return Response({"message": "reset link sent to your mail"}, status=status.HTTP_200_OK)
+=======
+        return Response({"message": "reset link sent to your mail"}, status=status.HTTP_204_NO_CONTENT)
+>>>>>>> [Feature #164361854]Adds response messages
 
     def get_users(self, email):
         if self._users is None:
