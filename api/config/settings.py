@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
+import django_heroku
 import logging
 import environ
 from django.utils.translation import gettext_lazy as _
@@ -72,9 +73,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
-
-    # django rest framework swagger documentation
-    'rest_framework_swagger',
 ]
 
 # Rest Framework Settings
@@ -136,6 +134,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 # Root url config entry point
@@ -423,3 +422,5 @@ if DJANGO_ENV == 'production':
         'DSN':
         SENTRY_DSN
     }
+
+django_heroku.settings(locals())
