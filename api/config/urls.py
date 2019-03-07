@@ -44,11 +44,9 @@ meetup_urls = include('meetups.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
 
 meetup_urls = include('meetups.urls')
-<<<<<<< HEAD
+oauth2_urls = include('rest_framework_social_oauth2.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
 
-=======
->>>>>>> #164275603 Post Meetup Endpoint for Questioner (Backend) (#6)
 urlpatterns = [
     path('auth/', oauth2_urls),
     path('api/', doc_urls),
