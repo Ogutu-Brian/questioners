@@ -101,10 +101,7 @@ pylint==2.3.1
 pyrsistent==0.14.11
 pytest==4.3.0
 pytest-cov==2.6.1
-<<<<<<< HEAD
 python3-openid==3.1.0
-<<<<<<< HEAD
-=======
 py==1.8.0
 pyasn1==0.4.5
 pyasn1-modules==0.2.4
@@ -125,9 +122,6 @@ pylint==2.3.1
 pyrsistent==0.14.11
 pytest==4.3.0
 pytest-cov==2.6.1
-=======
->>>>>>> #164275603 Post Meetup Endpoint for Questioner (Backend) (#6)
->>>>>>> #164275603 Post Meetup Endpoint for Questioner (Backend) (#6)
 pytz==2018.5
 PyYAML==3.13
 redis==2.10.6
