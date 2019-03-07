@@ -72,16 +72,17 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
+
+    # django rest framework swagger documentation
+    'rest_framework_swagger',
 ]
 
 # Rest Framework Settings
 # http://www.django-rest-framework.org/api-guide/settings/
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES':(
-        'rest_framework.permissions.DjangoModelPermissions',
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-
+    'DEFAULT_PERMISSION_CLASSES': (
+    'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
@@ -375,6 +376,7 @@ EMAIL_HOST = env.str('EMAIL_SMTP_HOST', default='localhost')
 EMAIL_HOST_USER = env.str('EMAIL_SMTP_USER', default='')
 EMAIL_HOST_PASSWORD = env.str('EMAIL_SMTP_PASSWORD', default='')
 EMAIL_PORT = env.int('EMAIL_SMTP_PORT', default=1025)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 
 # Prefix for emails to administrators
 EMAIL_SUBJECT_PREFIX = '[ADMIN] '

@@ -1,5 +1,14 @@
 # Questioner
 
+[![Coverage Status](https://coveralls.io/repos/github/Ogutu-Brian/questioners/badge.svg?branch=develop)](https://coveralls.io/github/Ogutu-Brian/questioners?branch=develop)
+[![Build Status](https://travis-ci.org/Ogutu-Brian/questioners.svg?branch=develop)](https://travis-ci.org/Ogutu-Brian/questioners)
+[![Maintainability](https://api.codeclimate.com/v1/badges/4d16bef0be1da640c69d/maintainability)](https://codeclimate.com/github/Ogutu-Brian/questioners/maintainability)
+## Prerequisites
+
+- PostgreSQL
+
+
+
 ## Initial Auth Endpoints
  - User Signup
  ```
@@ -47,7 +56,7 @@
  ```
   /api/schema/
  ```
- 
+
 ## Local Development Setup
  - First Create python virtual env
  ```
@@ -65,11 +74,7 @@
  ```
   $ cp .env-example .env
  ```
- - Installing Postgres
-```
- $ sudo apt-get install postgresql postgresql-contrib
-
-```
+ 
  - Create postgres database
  ```
   $ sudo su postgres
