@@ -259,7 +259,7 @@ class PasswordResetView(utils.ActionViewMixin, generics.GenericAPIView):
     def _action(self, serializer):
         for user in self.get_users(serializer.data['email']):
             self.send_password_reset_email(user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "reset link sent to your mail"}, status=status.HTTP_204_NO_CONTENT)
 
     def get_users(self, email):
         if self._users is None:
@@ -339,3 +339,4 @@ class SocialAuthView(generics.CreateAPIView):
         except:
             data={'Message': 'No user with the given credentials found'}
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "password successfully reset"}, status=status.HTTP_204_NO_CONTENT)
