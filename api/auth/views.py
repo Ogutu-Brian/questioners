@@ -12,6 +12,9 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.authentication import get_authorization_header
 from rest_framework.views import APIView
 
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import MissingBackend
+
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
 from djoser.conf import settings
