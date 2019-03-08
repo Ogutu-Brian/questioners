@@ -3,33 +3,110 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse as api_reverse
 from rest_framework import status
-from rest_framework.test import  APITestCase
-
+from rest_framework.test import  APITestCase, APIClient
+import json
 from .models import User
 
-class TestEmailSent(APITestCase):
+class TestPasswordReset(APITestCase):
     """
-    test for class to send password reset link to email
+    test for class to resetnpassword using mail
     """
+    client = APIClient
+
     def setUp(self):
         """
         set up method to test email to be sent endpoint
         """
-        self.url = api_reverse('reset_password')
-        self.register_url = api_reverse('user_signup')
-        self.user =  {
-            'user' : {
-                'username': 'philip',
-                'email': 'philino92@gmail.com',
-                'password': 'philip2345'
-            }
+        self.url = api_reverse('user_signup')
+        self.act_url = api_reverse('user_activate')
+        self.email_url = api_reverse('reset_password')
+        self.reset_url = api_reverse('reset_password_confirm')
+
+        self.user_data = {
+            "name": 'philp',
+            "nick_name": 'ototo',
+            "email": 'test@gmail.com',
+            "password": 'adminPaswiseadmsw0rd'
         }
-        self.client.post(self.register_url, self.user, format="json")
-        User.is_active = True
+    def user_sigup_details(self):
+        """
+        This method signs up a user and returns
+        user id and the token
+        """
+        data = self.user_data
+        self.response = self.client.post(self.url, data,format="json")
+        user_id, token = self.response.context['uid'], self.response.context['token']
+        return user_id, token
+
+
+    def test_sucess_email(self):
+        """
+        case where registered user tries to request a password reset with an activated account
+        """
+        response = self.client.post(self.email_url, data={"email":"philino92@gmail.com"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.content, b'{"message":"reset link sent to your mail"}')
+
+    def test_reset_password(self):
+        """
+        tests for reset password
+        """
+
+        data = self.user_sigup_details()
+        self.activation_data = {
+            "uid": data[0],
+            "token": data[1]
+        }
+
+        #reset confirm password
+        self.reset_confirm_data = {
+            "uid": self.activation_data['uid'],
+            "token": self.activation_data['token'],
+            "new_password": "pass123key",
+            "re_new_password": "pass123key"
+        }
+
+        self.response = self.client.post(self.reset_url,
+            self.reset_confirm_data,
+            format="json"
+        )
+
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.response.content, b'{"message":"password successfully reset"}')
+        
+        
+    def test_reset_with_unactivated_account(self):
+        """
+        Test method to ensure users cannot reset password with unverified
+        email address when signing in
+        """
+        # sign-up user
+        data = self.user_data
+
+        self.client.post(self.url, data, format="json")
+        #reset password before verifying email address
+        self.response = self.client.post(
+            self.email_url,
+            self.user_data['email'],
+            format="json"
+        )
+
+        self.assertEqual(self.response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_unregistered_email(self):
         """
         case where unregistered user tries to request a password
         """
-        response = self.client.post(self.url, data={"email":"philipsiko@gmail.com"})
+        response = self.client.post(self.email_url, data={"email":"philipsiko@gmail.com"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.content, b'{"detail":"User account with given email does not exist.","code":"not_found"}')
+        
+    def test_empty_email(self):
+        """
+        case where user tries to request a password reset with empty email
+        """
+        response = self.client.post(self.email_url, data={"email":""})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.content, b'{"email":["This field may not be blank."]}')
+
+    
