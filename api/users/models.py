@@ -1,8 +1,12 @@
 import uuid
+import jwt
+from datetime import datetime as date_time, timedelta
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
+from config import settings
+
 
 
 class UserManager(BaseUserManager):
@@ -57,3 +61,22 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email or str(self.mobile_number)
+
+    @property
+    def token(self):
+        """
+        This method allows us to get the token by calling 'user.token'
+        """
+        return self.generate_jwt_token()
+
+    def generate_jwt_token(self):
+        """This method generates a JSON Web Token during user signup"""
+        user_details = {'email': self.email,
+                        'username': self.username}
+        token = jwt.encode(
+            {
+                'user_data': user_details,
+                'exp': date_time.now() + timedelta(hours=24)
+            }, settings.SECRET_KEY, algorithm='HS256'
+        )
+        return token.decode('utf-8')

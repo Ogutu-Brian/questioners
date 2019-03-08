@@ -92,7 +92,7 @@ class LoginTest(BaseTest):
         Test correct user login credentials
         """
         response = self.login_user("admin@questioner.com", "@Admin123")
-        self.assertIn("auth_token", response.data)
+        self.assertIn("token", response.data)
         self.assertEqual(response.status_code, HTTP_200_OK)
 
     def test_login_incorrect_credentials(self):

@@ -123,19 +123,21 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
+class LoginView(generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
     permission_classes = [permissions.AllowAny]
 
-    def _action(self, serializer):
-        token = {
-                # using drf jwt utility functions to generate a token
-                "auth_token": jwt_encode_handler(
-                    jwt_payload_handler(serializer.user)
-                )}
-        token_serializer = serializers.TokenSerializer(data=token)
-        token_serializer.is_valid()
-        return Response(token_serializer.data)
+    def post(self, request):
+        user = request.data
+
+        # Notice here that we do not call `serializer.save()` like we did for
+        # the registration endpoint. This is because we don't actually have
+        # anything to save. Instead, the `validate` method on our serializer
+        # handles everything we need.
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
  
 class LogoutView(views.APIView):
@@ -230,19 +232,19 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SocialAuthView(generics.CreateAPIView):
+class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
     """Login via Google"""
     permission_classes = [permissions.AllowAny]
     serializer_class = serializers.SocialAuthSerializer
 
-    def create(self, request):
+    def _action(self, serializer):
         """Takes in provider and access_token to authenticate user"""
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=self.request.data)
 
         serializer.is_valid(raise_exception=True)
         provider = serializer.data.get("provider")
-        authenticated_user = request.user if not request.user.is_anonymous else None  # noqa E501
-        strategy = load_strategy(request)
+        authenticated_user = self.request.user if not self.request.user.is_anonymous else None  # noqa E501
+        strategy = load_strategy(self.request)
 
         try:
             # Load backend associated with the provider
@@ -264,13 +266,14 @@ class SocialAuthView(generics.CreateAPIView):
         if user:
             email = user.email
             username = user.username
-            token = {
-                "auth_token": jwt_encode_handler(
-                    jwt_payload_handler(user)
-                )}
+            token = user.token
+            # token = {
+            #     "auth_token": jwt_encode_handler(
+            #         jwt_payload_handler(user)
+            #     )}
             data = {
                 "username": username,
                 "email": email,
-                "token": token['auth_token']
+                "token": token
             }
             return Response(data, status=status.HTTP_200_OK)
