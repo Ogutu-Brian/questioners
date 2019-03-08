@@ -136,7 +136,7 @@ class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
         token_serializer = serializers.TokenSerializer(data=token)
         token_serializer.is_valid()
         return Response(token_serializer.data)
-
+    
  
 class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]

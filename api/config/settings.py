@@ -377,6 +377,7 @@ EMAIL_HOST = env.str('EMAIL_SMTP_HOST', default='localhost')
 EMAIL_HOST_USER = env.str('EMAIL_SMTP_USER', default='')
 EMAIL_HOST_PASSWORD = env.str('EMAIL_SMTP_PASSWORD', default='')
 EMAIL_PORT = env.int('EMAIL_SMTP_PORT', default=1025)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 
 # Prefix for emails to administrators
 EMAIL_SUBJECT_PREFIX = '[ADMIN] '
