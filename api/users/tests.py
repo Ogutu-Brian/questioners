@@ -9,14 +9,10 @@ from django.test import TestCase
 from contextlib import contextmanager
 
 from rest_framework.reverse import reverse
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from rest_framework.test import APIClient, APITestCase
 
-from urllib.parse import parse_qs, urlparse
-from urllib3_mock import Responses
-
-resps = Responses('requests.packages.urllib3')
-
+import os
 from users.models import User
 
 # Create your tests here.
@@ -27,7 +23,8 @@ user_data = {
     'name': 'Abraham Kamau',
     'email': 'ericabraham806@gmail.com',
 }
-
+token = os.getenv('GoogleAccessToken')
+bad_token = 'badtokendhbi'
 
 class BaseTest(APITestCase):
     """
@@ -64,6 +61,7 @@ class BaseTest(APITestCase):
 
     def social_login(self, token):
         social_url = reverse("social")
+        self.provider = 'google-oauth2'
         return self.client.post(
             social_url,
             data=json.dumps({
@@ -103,73 +101,15 @@ class LoginTest(BaseTest):
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
 
 
-def generate_resp(request):
-    token = parse_qs(urlparse(request.url).query)['access_token'][0]
-    status = 200
-    try:
-        body = user_data[token]
-    except KeyError:
-        body = {'errors': 'Invalid Token'}
-        status = 401
-    return (status, {}, json.dumps(body))
-
-
-@contextmanager
-def mocked(endpoint):
-    with responses.RequestsMock() as rsps:
-        rsps.add_callback(resps.GET, endpoint,
-                          callback=generate_resp,
-                          content_type='application/json',
-                          match_querystring=True,
-                          )
-        yield rsps
-
-
 class GoogleOAuthTest(BaseTest):
     """
     Tests for google authentication using OAuth2
     """
-
-    def test_new_user_creation(self):
-        "Ensure that we can correctly create a new user for someone with a valid token."
-        for token, data in user_data.items():
-            with self.subTest(token=token), mocked(self.mock_url):
-                response = self.social_login(token)
-
-                self.assertEqual(response.status_code, HTTP_201_CREATED)
-                self.assertIn('token', response.data)
-                self.assertNotEqual(response.data['token'], token)
-                self.assertEqual(User.objects.filter(
-                    email=data['email']).count(), 1)
-
-                user_model = User.objects.get(email=data['email'])
-                self.assertEqual(user_model.username, user_model.email)
-
-    def test_existing_user_login(self):
-        """
-        Tests if existing user can login with token
-        """
-        for token, data in user_data.items():
-            self.save_user
-            with self.subTest(token=token), mocked(self.mock_url):
-                response = self.social_login(token)
-                self.assertEqual(response.status_code, HTTP_200_OK)
-                self.assertIn('auth_token', response.data)
-                self.assertNotEqual(response.data['auth_token'], token)
-                self.assertEqual(User.objects.filter(
-                    email=data['email']).count(), 1)
-                user = User.objects.get(email=data['email'])
-                self.assertEqual(user.get_full_name(), data['name'])
-
-    def test_invalid_google_token(self):
-        "Ensure that users who present an invalid social token are not granted access"
-        emails = {u.email for u in User.objects.all()}
-
-        token = 'invalid_token'
+    def test_successful_google_login(self):
         response = self.social_login(token)
+        self.assertEqual(response.status_code, HTTP_200_OK)
 
-        self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
-        self.assertNotIn('token', response.data)
-
-        new_emails = {u.email for u in User.objects.all()}
-        self.assertEqual(emails, new_emails)
+    def test_unsuccessful_google_login(self):
+        response = self.social_login(bad_token)
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+    
