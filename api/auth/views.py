@@ -191,20 +191,22 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
+class LoginView(generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
     permission_classes = [permissions.AllowAny]
 
-    def _action(self, serializer):
-        token = {
-                # using drf jwt utility functions to generate a token
-                "auth_token": jwt_encode_handler(
-                    jwt_payload_handler(serializer.user)
-                )}
-        token_serializer = serializers.TokenSerializer(data=token)
-        token_serializer.is_valid()
-        return Response(token_serializer.data)
+    def post(self, request):
+        user = request.data
 
+        # Notice here that we do not call `serializer.save()` like we did for
+        # the registration endpoint. This is because we don't actually have
+        # anything to save. Instead, the `validate` method on our serializer
+        # handles everything we need.
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
  
 class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -298,7 +300,7 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SocialAuthView(generics.CreateAPIView):
+class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
     """Login via Google"""
     permission_classes = [permissions.AllowAny]
     serializer_class = serializers.SocialAuthSerializer
