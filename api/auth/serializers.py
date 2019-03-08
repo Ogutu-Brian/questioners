@@ -19,6 +19,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.CharField()
     password = serializers.CharField(
         style={'input_type': 'password'}, write_only=True)
+    token = serializers.CharField(read_only=True)
 
     token = serializers.SerializerMethodField()
 
@@ -147,43 +148,39 @@ class TokenSerializer(serializers.ModelSerializer):
         fields = ('auth_token', )
 
 
-class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField()
-    password = serializers.CharField(style={'input_type': 'password'})
+class LoginSerializer(utils.ActionViewMixin, serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+    username = serializers.CharField(max_length=255, read_only=True)
+    password = serializers.CharField(max_length=128, style={'input_type': 'password'}, write_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
 
-    def __init__(self, *args, **kwargs):
-        super(LoginSerializer, self).__init__(*args, **kwargs)
-        self.user = None
+    def validate(self, data):
+        email = data.get('email', None)
+        password = data.get('password', None)
 
-    def validate(self, attrs):
-        username = attrs.get('email')
-        password = attrs.get('password')
+        if email is None:
+            raise serializers.ValidationError(
+                'An email address is required to log in.'
+            )
 
-        user_account = self._get_user_by_username(username)
-        if not user_account:
+        if password is None:
+            raise serializers.ValidationError(
+                'A password is required to log in.'
+            )
+
+        user = authenticate(username=email, password=password)
+
+        if user is None:
             raise drf_exceptions.AuthenticationFailed(
-                _('Unable to login with the provided credentials.'))
-
-        self.user = authenticate(username=username, password=password)
-        if not self.user:
-            if user_account.is_active:
-                raise drf_exceptions.AuthenticationFailed(
-                    _('Unable to login with the provided credentials.'))
-            else:
-                raise drf_exceptions.PermissionDenied(
-                    _('The account is inactive, please activate your account.'
-                      ), 'notActivated')
-
-        return attrs
-
-    @staticmethod
-    def _get_user_by_username(username):
-        user = User.objects.filter(**{
-            User.USERNAME_FIELD + '__iexact': username
-        }).first()
-
-        return user
-
+            _(
+                'A user with this email and password was not found.'
+            ))
+        
+        return {
+            'email': user.email,
+            'username': user.username,
+            'token': user.token
+            }
 
 class PasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(style={'input_type': 'password'})

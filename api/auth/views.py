@@ -188,7 +188,7 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
+class LoginView(generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
     permission_classes = [permissions.AllowAny]
 
