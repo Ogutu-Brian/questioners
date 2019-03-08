@@ -153,7 +153,7 @@ class GoogleOAuthTest(BaseTest):
             self.save_user
             with self.subTest(token=token), mocked(self.mock_url):
                 response = self.social_login(token)
-                # self.assertEqual(response.status_code, HTTP_200_OK)
+                self.assertEqual(response.status_code, HTTP_200_OK)
                 self.assertIn('auth_token', response.data)
                 self.assertNotEqual(response.data['auth_token'], token)
                 self.assertEqual(User.objects.filter(
