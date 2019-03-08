@@ -1,4 +1,6 @@
-import json, responses, re
+import json
+import responses
+import re
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
@@ -11,32 +13,13 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTH
 from rest_framework.test import APIClient, APITestCase
 
 from urllib.parse import parse_qs, urlparse
+from urllib3_mock import Responses
+
+resps = Responses('requests.packages.urllib3')
 
 from users.models import User
 
 # Create your tests here.
-
-
-class UserTestCase(TestCase):
-    """Dummy test case for user"""
-
-    def test_user_was_saved(self):
-        """Dummy"""
-        user = User.objects.create(name="Brian", nick_name="Ogutu",
-                                   email="codingbrian58@gmail.com",
-                                   password="Henkdebruin58")
-        self.assertEqual(user.name, "Brian")
-        self.assertEqual(user.email, "codingbrian58@gmail.com")
-
-
-class YourTestClass(TestCase):
-
-    def test_one_plus_one_equals_two(self):
-        print("Method: test_one_plus_one_equals_two.")
-        self.assertEqual(1 + 1, 2)
-"""
-Tests for user Auth
-"""
 
 User = get_user_model()
 user_data = {
@@ -44,6 +27,7 @@ user_data = {
     'name': 'Abraham Kamau',
     'email': 'ericabraham806@gmail.com',
 }
+
 
 class BaseTest(APITestCase):
     """
@@ -53,7 +37,8 @@ class BaseTest(APITestCase):
     provider = 'google-oauth2'
     QUERY_STRINGS_RE = '\?([\w-]+(=[\w-]*)?(&[\w-]+(=[\w-]*)?)*)?$'
 
-    base_url = 'https://www.googleapis.com/plus/v1/people/me'.replace('.', r'\.')
+    base_url = 'https://www.googleapis.com/plus/v1/people/me'.replace(
+        '.', r'\.')
     mock_url = re.compile(
         base_url + QUERY_STRINGS_RE
     )
@@ -68,35 +53,40 @@ class BaseTest(APITestCase):
             }),
             content_type="application/json"
         )
+
     def save_user(self):
         User.objects.create(
             name="Abraha Kamau",
             nick_name="greean",
             email="ericabraham806@gmail.com",
             password="@Us3r.com"
-            )
-    def social_try_token(self, token):
-        """
-        Method to enable simple means for access via token
-        """
-        social_url = "/api/auth/oauth/{}/"
+        )
+
+    def social_login(self, token):
+        social_url = reverse("social")
         return self.client.post(
-            social_url.format(self.provider),
-            data={"access_token": token},
+            social_url,
+            data=json.dumps({
+                "access_token": token,
+                "provider": self.provider
+            }),
+            content_type="application/json"
         )
 
     def setUp(self):
-        
+
         self.user = User.objects._create_user(
-            nick_name = "admin",
-            email = "admin@questioner.com",
-            password = "@Admin123"
+            nick_name="admin",
+            email="admin@questioner.com",
+            password="@Admin123"
         )
+
 
 class LoginTest(BaseTest):
     """
     Tests for auth/login endpoint
     """
+
     def test_login_correct_credentials(self):
         """
         Test correct user login credentials
@@ -104,13 +94,15 @@ class LoginTest(BaseTest):
         response = self.login_user("admin@questioner.com", "@Admin123")
         self.assertIn("auth_token", response.data)
         self.assertEqual(response.status_code, HTTP_200_OK)
-    
+
     def test_login_incorrect_credentials(self):
         """
         Test incorrect user login credentials
         """
         response = self.login_user("abraham", "aBu#123")
         self.assertEqual(response.status_code, HTTP_401_UNAUTHORIZED)
+
+
 def generate_resp(request):
     token = parse_qs(urlparse(request.url).query)['access_token'][0]
     status = 200
@@ -120,16 +112,18 @@ def generate_resp(request):
         body = {'errors': 'Invalid Token'}
         status = 401
     return (status, {}, json.dumps(body))
-    
+
+
 @contextmanager
 def mocked(endpoint):
     with responses.RequestsMock() as rsps:
-        rsps.add_callback(responses.GET, endpoint,
+        rsps.add_callback(resps.GET, endpoint,
                           callback=generate_resp,
                           content_type='application/json',
                           match_querystring=True,
                           )
         yield rsps
+
 
 class GoogleOAuthTest(BaseTest):
     """
@@ -140,13 +134,14 @@ class GoogleOAuthTest(BaseTest):
         "Ensure that we can correctly create a new user for someone with a valid token."
         for token, data in user_data.items():
             with self.subTest(token=token), mocked(self.mock_url):
-                response = self.social_try_token(token)
+                response = self.social_login(token)
 
                 self.assertEqual(response.status_code, HTTP_201_CREATED)
                 self.assertIn('token', response.data)
                 self.assertNotEqual(response.data['token'], token)
-                self.assertEqual(User.objects.filter(email=data['email']).count(), 1)
-                
+                self.assertEqual(User.objects.filter(
+                    email=data['email']).count(), 1)
+
                 user_model = User.objects.get(email=data['email'])
                 self.assertEqual(user_model.username, user_model.email)
 
@@ -157,11 +152,12 @@ class GoogleOAuthTest(BaseTest):
         for token, data in user_data.items():
             self.save_user
             with self.subTest(token=token), mocked(self.mock_url):
-                response = self.social_try_token(token)
-                self.assertEqual(response.status_code, HTTP_200_OK)
-                self.assertIn('token', response.data)
-                self.assertNotEqual(response.data['token'], token)
-                self.assertEqual(User.objects.filter(email=data['email']).count(), 1)
+                response = self.social_login(token)
+                # self.assertEqual(response.status_code, HTTP_200_OK)
+                self.assertIn('auth_token', response.data)
+                self.assertNotEqual(response.data['auth_token'], token)
+                self.assertEqual(User.objects.filter(
+                    email=data['email']).count(), 1)
                 user = User.objects.get(email=data['email'])
                 self.assertEqual(user.get_full_name(), data['name'])
 
@@ -170,7 +166,7 @@ class GoogleOAuthTest(BaseTest):
         emails = {u.email for u in User.objects.all()}
 
         token = 'invalid_token'
-        response = self.social_try_token(token)
+        response = self.social_login(token)
 
         self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
         self.assertNotIn('token', response.data)

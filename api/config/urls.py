@@ -41,13 +41,10 @@ api_browser_urls = include('rest_framework.urls')
 auth_urls = include('auth.urls')
 
 urlpatterns = [
-    path('api-token-auth/', obtain_jwt_token, name='access_token'),
     path('api/', doc_urls),
     path('api/auth/', auth_urls),
     path('api/schema/', schema_view),
-
     path('api/schema/swagger/', schema_view_swagger),
-
     path('api/browser/', api_browser_urls),
     path('api/admin/', admin.site.urls),
 ]

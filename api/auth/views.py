@@ -10,6 +10,9 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
 from rest_framework_jwt.settings import api_settings
 
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import MissingBackend
+
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
 from djoser.conf import settings
@@ -225,3 +228,49 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         if self.request.user.is_authenticated:
             utils.logout_user(self.request)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SocialAuthView(generics.CreateAPIView):
+    """Login via Google"""
+    permission_classes = [permissions.AllowAny]
+    serializer_class = serializers.SocialAuthSerializer
+
+    def create(self, request):
+        """Takes in provider and access_token to authenticate user"""
+        serializer = self.serializer_class(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        provider = serializer.data.get("provider")
+        authenticated_user = request.user if not request.user.is_anonymous else None  # noqa E501
+        strategy = load_strategy(request)
+
+        try:
+            # Load backend associated with the provider
+            backend = load_backend(strategy=strategy, name=provider, redirect_uri=None)
+            access_token = serializer.data.get("access_token")
+
+        except MissingBackend:
+            return Response({"error": "The Provider is invalid"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Go through the pipeline to create user if they don't exist
+            user = backend.do_auth(access_token, user=authenticated_user)
+            
+        except BaseException:
+            return Response({"error": "Invalid token"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if user:
+            email = user.email
+            username = user.username
+            token = {
+                "auth_token": jwt_encode_handler(
+                    jwt_payload_handler(user)
+                )}
+            data = {
+                "username": username,
+                "email": email,
+                "token": token['auth_token']
+            }
+            return Response(data, status=status.HTTP_200_OK)

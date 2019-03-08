@@ -222,3 +222,10 @@ class PasswordResetConfirmSerializer(UidAndTokenSerializer,
 class PasswordResetConfirmRetypeSerializer(UidAndTokenSerializer,
                                            PasswordRetypeSerializer):
     pass
+
+
+class SocialAuthSerializer(serializers.Serializer):
+    """ Accepts provider and access token"""
+    provider = serializers.CharField(max_length=255, required=True)
+    access_token = serializers.CharField(
+        max_length=4096, required=True, trim_whitespace=True)
