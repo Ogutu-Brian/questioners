@@ -64,7 +64,7 @@
  ```
  - Install Requirements
  ```
-  $ pip install -r api/requiremts.txt
+  $ pip install -r requirements.txt
  ```
  - Copy .env-example to .env and set config
  ```

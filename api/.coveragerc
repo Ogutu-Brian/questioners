@@ -4,3 +4,5 @@ precision = 2
 omit = *migrations*
     *.venv*
     */home/travis/virtualenv*
+    */tests*
+    */manage*

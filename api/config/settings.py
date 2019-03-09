@@ -49,7 +49,11 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 # Hosts/domain names that are valid for this site
 # https://docs.djangoproject.com/en/2.0/ref/settings/#allowed-hosts
 
-ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "0.0.0.0", 
+    "localhost"
+    ]
 USE_X_FORWARDED_HOST = env.bool('DJANGO_USE_X_FORWARDED_HOST', default=True)
 
 # Django Installed Apps
@@ -161,9 +165,9 @@ JWT_AUTH = {
 # http://djoser.readthedocs.io/en/latest/settings.html
 
 DJOSER = {
-    'LOGIN_URL': 'login',
+    'LOGIN_URL': 'api/auth/login/',
     'PASSWORD_RESET_CONFIRM_URL': 'auth/password/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'auth/activate/{uid}/{token}',
+    'ACTIVATION_URL': 'api/auth/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'SEND_ACTIVATION_SMS': True,
@@ -302,6 +306,8 @@ AUTHENTICATION_BACKENDS = [
     'rest_framework_social_oauth2.backends.DjangoOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
+    'oauth2_provider.backends.OAuth2Backend',
+
 ]
 
 # Set up social auth keys from the environment
