@@ -25,6 +25,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             User._meta.pk.name,
             'email',
             'password',
+            'token'
         )
 
     def validate(self, attrs):

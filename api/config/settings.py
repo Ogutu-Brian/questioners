@@ -277,7 +277,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    # 'rest_framework_social_oauth2.backends.DjangoOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
