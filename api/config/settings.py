@@ -181,7 +181,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': '',
-        }
+    }
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 DATABASES['default']['CONN_MAX_AGE'] = env.int(
@@ -297,7 +297,7 @@ CELERY_TIMEZONE = TIME_ZONE
 # https://docs.djangoproject.com/en/2.0/topics/email/
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS= env.str('EMAIL_USE_TLS', default='')
+EMAIL_USE_TLS = env.str('EMAIL_USE_TLS', default='')
 EMAIL_HOST = env.str('EMAIL_SMTP_HOST', default='localhost')
 EMAIL_HOST_USER = env.str('EMAIL_SMTP_USER', default='')
 EMAIL_HOST_PASSWORD = env.str('EMAIL_SMTP_PASSWORD', default='')
