@@ -9,12 +9,15 @@ from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
+<<<<<<< HEAD
 from rest_framework.authentication import get_authorization_header
 from rest_framework.views import APIView
 from rest_framework_jwt.settings import api_settings
 
 from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import MissingBackend
+=======
+>>>>>>> [finishes #164361710] Google OAuth2 login
 
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
@@ -35,8 +38,6 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 User = get_user_model()
-jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 
 class AuthApiListView(views.APIView):
@@ -191,23 +192,16 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LoginView(generics.GenericAPIView):
+class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
     permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
-        user = request.data
+    def _action(self, serializer):
+        token = utils.login_user(self.request, serializer.user)
+        token_serializer_class = serializers.TokenSerializer
+        return Response(data=token_serializer_class(token).data)
 
-        # Notice here that we do not call `serializer.save()` like we did for
-        # the registration endpoint. This is because we don't actually have
-        # anything to save. Instead, the `validate` method on our serializer
-        # handles everything we need.
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
- 
 class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -300,7 +294,7 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
+class SocialAuthView(generics.CreateAPIView):
     """Login via Google"""
     permission_classes = [permissions.AllowAny]
     serializer_class = serializers.SocialAuthSerializer
