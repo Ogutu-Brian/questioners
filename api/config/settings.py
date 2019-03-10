@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'social_django',
     'rest_framework_social_oauth2',
     'rest_framework_swagger',
+    'corsheaders',
 ]
 
 # Rest Framework Settings
@@ -142,7 +143,22 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False
+CORS_ORIGIN_WHITELIST = (
+    '0.0.0.0:3000'
+    'localhost:3000',
+    '*'
+)
+CORS_ORIGIN_REGEX_WHITELIST = (
+    '0.0.0.0:3000',
+    'localhost:3000',
+    '*'
+)
 
 # Root url config entry point
 # https://docs.djangoproject.com/en/2.0/ref/settings/#root-urlconf
@@ -287,6 +303,12 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_OAUTH2_KEY")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_OAUTH2_SECRET")
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
+
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
+
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 
 # We need to set the following scopes, to ensure that we can read
 # basic profile details and email addresses.
@@ -501,3 +523,16 @@ if DJANGO_ENV == 'production':
         'DSN':
         SENTRY_DSN
     }
+
+SWAGGER_SETTINGS = {
+  'SHOW_REQUEST_HEADERS': True,
+  'USE_SESSION_AUTH': False,
+  'DOC_EXPANSION': 'list',
+  'SECURITY_DEFINITIONS': {
+      'api_key': {
+          'type': 'apiKey',
+          'in': 'header',
+          'name': 'Authorization'
+      }
+  }
+}

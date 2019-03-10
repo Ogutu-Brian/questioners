@@ -258,7 +258,6 @@ class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
         try:
             # Go through the pipeline to create user if they don't exist
             user = backend.do_auth(access_token, user=authenticated_user)
-
             
         except BaseException:
             return Response({"error": "Invalid token"},

@@ -28,12 +28,14 @@ from django.conf.urls.static import static
 from auth.views import AuthApiListView
 from utils.router import DefaultRouterWithAPIViews
 
+from .swagger import schema_view_swagger 
+
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 
 router = DefaultRouterWithAPIViews()
 router.register('api/auth', AuthApiListView)
 
-schema_view_swagger = get_swagger_view(title='Questioner API')
+# schema_view_swagger = get_swagger_view(title='Questioner API')
 
 schema_view = get_schema_view(title=settings.API_BROWSER_HEADER, public=True)
 doc_urls = include_docs_urls(title=settings.API_BROWSER_HEADER)
