@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'macros',
     'users',
+    'meetups',
     'djoser',
     'mail_templated',
     'utils',
@@ -399,9 +400,8 @@ MOBILE_ACTIVATION_TOKEN_LENGTH = 6
 MOBILE_ACTIVATION_TOKEN_HASH_ALGORITHM = 'sha256'
 
 # Test Settings
-# TEST_PAYLOAD_PATH = str(API_DIR) + '/utils/test/'
-# TEST_DATA_PATH = TEST_PAYLOAD_PATH + 'data/'
-# TEST_RUNNER = 'utils.test.test_runner.CMTestRunner'
+TEST_PAYLOAD_PATH = str(API_DIR) + '/utils/test/'
+TEST_DATA_PATH = TEST_PAYLOAD_PATH + 'data/'
 
 # Site Reliability Team
 # https://docs.djangoproject.com/en/2.0/ref/settings/#admins
