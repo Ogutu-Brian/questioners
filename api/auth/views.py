@@ -243,13 +243,13 @@ class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
 
         serializer.is_valid(raise_exception=True)
         provider = serializer.data.get("provider")
+        access_token = serializer.data.get("access_token")
         authenticated_user = self.request.user if not self.request.user.is_anonymous else None  # noqa E501
         strategy = load_strategy(self.request)
 
         try:
             # Load backend associated with the provider
             backend = load_backend(strategy=strategy, name=provider, redirect_uri=None)
-            access_token = serializer.data.get("access_token")
 
         except MissingBackend:
             return Response({"error": "The Provider is invalid"},
@@ -258,6 +258,7 @@ class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
         try:
             # Go through the pipeline to create user if they don't exist
             user = backend.do_auth(access_token, user=authenticated_user)
+
             
         except BaseException:
             return Response({"error": "Invalid token"},
@@ -265,12 +266,9 @@ class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
 
         if user:
             email = user.email
-            username = user.username
+            username = user.name
             token = user.token
-            # token = {
-            #     "auth_token": jwt_encode_handler(
-            #         jwt_payload_handler(user)
-            #     )}
+            
             data = {
                 "username": username,
                 "email": email,

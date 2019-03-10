@@ -23,8 +23,7 @@ user_data = {
     'name': 'Abraham Kamau',
     'email': 'ericabraham806@gmail.com',
 }
-token = os.getenv('GoogleAccessToken')
-bad_token = 'badtokendhbi'
+
 
 class BaseTest(APITestCase):
     """
@@ -59,17 +58,7 @@ class BaseTest(APITestCase):
             password="@Us3r.com"
         )
 
-    def social_login(self, token):
-        social_url = reverse("social")
-        self.provider = 'google-oauth2'
-        return self.client.post(
-            social_url,
-            data=json.dumps({
-                "access_token": token,
-                "provider": self.provider
-            }),
-            content_type="application/json"
-        )
+    
 
     def setUp(self):
 
@@ -78,7 +67,24 @@ class BaseTest(APITestCase):
             email="admin@questioner.com",
             password="@Admin123"
         )
+        self.social_url = reverse("social")
 
+        self.token = os.getenv('GoogleAccessToken')
+        self.bad_token = 'badtokendhbi'
+        self.provider = 'google-oauth2'
+        self.invalid_provider = 'google'
+        self.no_provider = ''
+
+    def social_login(self, provider, token):
+        social_url = reverse("social")
+        return self.client.post(
+            social_url,
+            data=json.dumps({
+                "access_token": token,
+                "provider": provider
+            }),
+            content_type="application/json"
+        )
 
 class LoginTest(BaseTest):
     """
@@ -106,10 +112,19 @@ class GoogleOAuthTest(BaseTest):
     Tests for google authentication using OAuth2
     """
     def test_successful_google_login(self):
-        response = self.social_login(token)
+        response = self.social_login(self.provider, self.token)
         self.assertEqual(response.status_code, HTTP_200_OK)
 
     def test_unsuccessful_google_login(self):
-        response = self.social_login(bad_token)
+        response = self.social_login(self.provider, self.bad_token)
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_no_provider(self):
+        response = self.social_login(self.no_provider,self.token)
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+
+    def test_invalid_provider(self):
+        response = self.social_login(self.invalid_provider, self.token)
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
     
+   
