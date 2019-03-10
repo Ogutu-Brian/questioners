@@ -429,3 +429,4 @@ if DJANGO_ENV == 'production':
     }
 
 django_heroku.settings(locals())
+del DATABASES['default']['OPTIONS']['sslmode']
