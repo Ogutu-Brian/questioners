@@ -18,7 +18,6 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls import include
 from rest_framework.schemas import get_schema_view
-# Import swagger documentation
 from rest_framework_swagger.views import get_swagger_view
 
 from rest_framework.documentation import include_docs_urls

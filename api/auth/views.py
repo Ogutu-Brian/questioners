@@ -1,5 +1,6 @@
-from datetime import datetime
-from django.contrib.auth import get_user_model, login, authenticate
+import jwt
+from datetime import datetime, timedelta
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.urls.exceptions import NoReverseMatch
 from django.utils.translation import ugettext_lazy as _
@@ -8,22 +9,23 @@ from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
-from rest_framework_jwt.settings import api_settings
-
-from social_django.utils import load_strategy, load_backend
-from social_core.exceptions import MissingBackend
 
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
 from djoser.conf import settings
+
+from config import settings as sett
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+from users.models import User
 
 from config import exceptions
 from . import serializers
 from . import mailer
 
 User = get_user_model()
-jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 
 class AuthApiListView(views.APIView):
@@ -123,23 +125,16 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LoginView(generics.GenericAPIView):
+class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
     serializer_class = serializers.LoginSerializer
     permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
-        user = request.data
+    def _action(self, serializer):
+        token = utils.login_user(self.request, serializer.user)
+        token_serializer_class = serializers.TokenSerializer
+        return Response(data=token_serializer_class(token).data)
 
-        # Notice here that we do not call `serializer.save()` like we did for
-        # the registration endpoint. This is because we don't actually have
-        # anything to save. Instead, the `validate` method on our serializer
-        # handles everything we need.
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
- 
 class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -232,45 +227,48 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SocialAuthView(utils.ActionViewMixin, generics.CreateAPIView):
+class SocialAuthView(generics.CreateAPIView):
     """Login via Google"""
     permission_classes = [permissions.AllowAny]
     serializer_class = serializers.SocialAuthSerializer
 
-    def _action(self, serializer):
-        """Takes in provider and access_token to authenticate user"""
-        serializer = self.serializer_class(data=self.request.data)
-
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        provider = serializer.data.get("provider")
-        access_token = serializer.data.get("access_token")
-        authenticated_user = self.request.user if not self.request.user.is_anonymous else None  # noqa E501
-        strategy = load_strategy(self.request)
-
+        token = serializer.data.get("id_token")
         try:
-            # Load backend associated with the provider
-            backend = load_backend(strategy=strategy, name=provider, redirect_uri=None)
+            idinfo = id_token.verify_oauth2_token(
+                token, requests.Request(), '407408718192.apps.googleusercontent.com')
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer')
+        except:
+            data={'Message': 'The token provided is invalid'}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
 
-        except MissingBackend:
-            return Response({"error": "The Provider is invalid"},
-                            status=status.HTTP_400_BAD_REQUEST)
-
+        if idinfo:
+            email = idinfo.get('email')
+            name = idinfo.get('name')
+            token = jwt.encode(
+                {
+                    'user_data': email,
+                    'exp': datetime.now() + timedelta(hours=24)
+                }, sett.SECRET_KEY, algorithm='HS256'
+            )
+        
         try:
-            # Go through the pipeline to create user if they don't exist
-            user = backend.do_auth(access_token, user=authenticated_user)
-            
-        except BaseException:
-            return Response({"error": "Invalid token"},
-                            status=status.HTTP_400_BAD_REQUEST)
+            if User.objects.get(email=email):
+                if User.objects.get(email=email).is_active:
+                        
+                    data = {
+                        "Message": "You are logged in.",
+                        "email": email,
+                        "name": name,
+                        "token": token
+                    }
+                    return Response(data, status=status.HTTP_200_OK)
+                data={'Message': 'Activate your account to log in'}
+                return Response(data=data, status=status.HTTP_401_UNAUTHORIZED)
 
-        if user:
-            email = user.email
-            username = user.name
-            token = user.token
-            
-            data = {
-                "username": username,
-                "email": email,
-                "token": token
-            }
-            return Response(data, status=status.HTTP_200_OK)
+        except:
+            data={'Message': 'No user with the given credentials found'}
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
