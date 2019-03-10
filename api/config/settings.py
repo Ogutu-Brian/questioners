@@ -14,7 +14,8 @@ import django_heroku
 import logging
 import environ
 from django.utils.translation import gettext_lazy as _
-import os, datetime
+import os
+import datetime
 
 # Project Base Paths
 # project_root/api/config/settings.py - 3 = project_root/
@@ -92,7 +93,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
