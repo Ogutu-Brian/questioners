@@ -290,7 +290,7 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         serializer.user.save()
         if self.request.user.is_authenticated:
             utils.logout_user(self.request)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "password successfully reset"}, status=status.HTTP_200_OK)
 
 
 class SocialAuthView(generics.CreateAPIView):
