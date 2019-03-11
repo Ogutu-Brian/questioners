@@ -11,7 +11,7 @@ import coreapi
 def schema_view_swagger(request):
     schema = coreapi.Document(
         title = 'Questioner API',
-        url = 'http://0.0.0.0:3000/', # replace with your url
+        url = 'http://127.0.0.1:8000/', # replace with your url
         content = {
             'Users': {
                 'login': coreapi.Link(
@@ -38,16 +38,10 @@ def schema_view_swagger(request):
                     action = 'POST',
                     fields = [
                         coreapi.Field(
-                            name = 'provider',
+                            name = 'id_token',
                             required = True,
                             location = 'form',
-                            description = 'The name of google provider'
-                        ),
-                        coreapi.Field(
-                            name = 'access_token',
-                            required = True,
-                            location = 'form',
-                            description = 'Access token acquired from google provider'
+                            description = 'Id token acquired from google provider'
                         )
                     ],
                     description = 'Using google authentication to login'
