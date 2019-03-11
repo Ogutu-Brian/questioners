@@ -1,0 +1,71 @@
+from rest_framework import status
+
+from .basetests import BaseTest
+from questions.models import Question
+
+
+class QuestionModelTest(BaseTest):
+    """
+    Tests for questions creation model
+    """
+
+    def test_saving_question(self):
+        """
+        Test if the models are saving data into the database
+        """
+        new_count = Question.objects.all().count()
+        self.assertEqual(new_count, 1)
+
+
+class PostQuestionTest(BaseTest):
+    """
+    Tests for questions creation endpoint
+    """
+
+    def test_posting_question(self):
+        """
+        Test successful creation of question
+        """
+        self.is_authenticated()
+        response = self.post_question()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_is_unauthenticated(self):
+        """
+        Test posting a question while unauthenticated
+        """
+        response = self.post_question()
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_missing_title(self):
+        """
+        Test posting question without a title
+        """
+        self.is_authenticated()
+        response = self.post_without_title()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_missing_body(self):
+        """
+        Test posting question without a body
+        """
+        self.is_authenticated()
+        response = self.post_without_body()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_duplicate_questions(self):
+        """
+        Test posting of duplicate questions on the same meetup
+        """
+        self.is_authenticated()
+        self.post_question()
+        response = self.post_question()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_with_invalid_meetup(self):
+        """
+        Test posting question with a meetup that does not exist
+        """
+        self.is_authenticated()
+        response = self.post_with_invalid_meetup()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
