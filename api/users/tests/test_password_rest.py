@@ -112,3 +112,4 @@ class TestPasswordReset(APITestCase):
 
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.response.content, b'{"message":"password successfully reset"}')
+        
