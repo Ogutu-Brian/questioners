@@ -91,7 +91,7 @@ class TestPasswordReset(APITestCase):
         tests for reset password
         """
 
-        data = self.user_sigup_details()
+        data = self.user_details()
         self.activation_data = {
             "uid": data[0],
             "token": data[1]
