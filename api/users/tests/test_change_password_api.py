@@ -14,10 +14,9 @@ URL_CHANGE_PASSWORD = api_reverse('change_password')
 
 class ChangePassWordTest(APITestCase):
 
-    client = APIClient
 
     def setUp(self):
-
+        self.client = APIClient()
         self.user = User.objects._create_user(
             nick_name="dude",
             email="dude@gmail.com",
@@ -47,10 +46,9 @@ class ChangePassWordTest(APITestCase):
             "re_new_password": "newpassword@dude",
             "current_password": "notmycurrentpassword"
         }
-        response = self.client.post(URL_LOGIN, self.data_login, format='json') 
-
-        token = response.data.get("token")
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        response = self.client.post(URL_LOGIN, self.data_login, format='json')
+        token = response.data.get("token", None)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_change_password_incorrect_current_password(self):
