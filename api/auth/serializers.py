@@ -24,6 +24,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             User._meta.pk.name,
             'email',
             'password',
+            'token'
         )
 
     def validate(self, attrs):
@@ -222,3 +223,8 @@ class PasswordResetConfirmSerializer(UidAndTokenSerializer,
 class PasswordResetConfirmRetypeSerializer(UidAndTokenSerializer,
                                            PasswordRetypeSerializer):
     pass
+
+class SocialAuthSerializer(serializers.Serializer):
+    """ Accepts id token"""
+    id_token = serializers.CharField(
+        max_length=4096, required=True, trim_whitespace=True)

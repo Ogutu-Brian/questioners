@@ -1,4 +1,5 @@
-from datetime import datetime
+import jwt
+from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.urls.exceptions import NoReverseMatch
@@ -12,6 +13,13 @@ from rest_framework.exceptions import PermissionDenied
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
 from djoser.conf import settings
+
+from config import settings as sett
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+from users.models import User
 
 from config import exceptions
 from . import serializers
@@ -217,3 +225,50 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         if self.request.user.is_authenticated:
             utils.logout_user(self.request)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SocialAuthView(generics.CreateAPIView):
+    """Login via Google"""
+    permission_classes = [permissions.AllowAny]
+    serializer_class = serializers.SocialAuthSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.data.get("id_token")
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                token, requests.Request(), '407408718192.apps.googleusercontent.com')
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer')
+        except:
+            data={'Message': 'The token provided is invalid'}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+
+        if idinfo:
+            email = idinfo.get('email')
+            name = idinfo.get('name')
+            token = jwt.encode(
+                {
+                    'user_data': email,
+                    'exp': datetime.now() + timedelta(hours=24)
+                }, sett.SECRET_KEY, algorithm='HS256'
+            )
+        
+        try:
+            if User.objects.get(email=email):
+                if User.objects.get(email=email).is_active:
+                        
+                    data = {
+                        "Message": "You are logged in.",
+                        "email": email,
+                        "name": name,
+                        "token": token
+                    }
+                    return Response(data, status=status.HTTP_200_OK)
+                data={'Message': 'Activate your account to log in'}
+                return Response(data=data, status=status.HTTP_401_UNAUTHORIZED)
+
+        except:
+            data={'Message': 'No user with the given credentials found'}
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)

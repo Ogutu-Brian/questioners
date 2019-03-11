@@ -15,6 +15,7 @@ import logging
 import environ
 from django.utils.translation import gettext_lazy as _
 import os
+import datetime
 
 # Project Base Paths
 # project_root/api/config/settings.py - 3 = project_root/
@@ -74,18 +75,28 @@ INSTALLED_APPS = [
     'django_extensions',
     'django.contrib.postgres',
     'phonenumber_field',
+    'oauth2_provider',
+    'social_django',
+    'rest_framework_social_oauth2',
     'rest_framework_swagger',
+    'corsheaders',
 ]
 
 # Rest Framework Settings
 # http://www.django-rest-framework.org/api-guide/settings/
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES':
-    ('rest_framework.permissions.DjangoModelPermissions', ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
     'DEFAULT_THROTTLE_CLASSES': (
         'rest_framework.throttling.AnonRateThrottle',
@@ -107,6 +118,43 @@ REST_FRAMEWORK = {
     ),
     'EXCEPTION_HANDLER':
     'config.exceptions.api_exception_handler',
+}
+
+# JWT authentication settings
+
+JWT_AUTH = {
+    'JWT_ENCODE_HANDLER':
+    'rest_framework_jwt.utils.jwt_encode_handler',
+
+    'JWT_DECODE_HANDLER':
+    'rest_framework_jwt.utils.jwt_decode_handler',
+
+    'JWT_PAYLOAD_HANDLER':
+    'rest_framework_jwt.utils.jwt_payload_handler',
+
+    'JWT_PAYLOAD_GET_USER_ID_HANDLER':
+    'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
+
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+    'rest_framework_jwt.utils.jwt_response_payload_handler',
+
+    'JWT_SECRET_KEY': SECRET_KEY,
+    'JWT_GET_USER_SECRET_KEY': None,
+    'JWT_PUBLIC_KEY': None,
+    'JWT_PRIVATE_KEY': None,
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_LEEWAY': 0,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
+    'JWT_AUDIENCE': None,
+    'JWT_ISSUER': None,
+
+    'JWT_ALLOW_REFRESH': False,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+    'JWT_AUTH_COOKIE': None,
 }
 
 # Djoser Auth Related Settings
@@ -131,13 +179,29 @@ DJOSER = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False
+CORS_ORIGIN_WHITELIST = (
+    '0.0.0.0:3000'
+    'localhost:3000',
+    '*'
+)
+CORS_ORIGIN_REGEX_WHITELIST = (
+    '0.0.0.0:3000',
+    'localhost:3000',
+    '*'
+)
 
 # Root url config entry point
 # https://docs.djangoproject.com/en/2.0/ref/settings/#root-urlconf
@@ -160,6 +224,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django_settings_export.settings_export',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -181,11 +247,12 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': '',
-        }
+    }
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 DATABASES['default']['CONN_MAX_AGE'] = env.int(
     'DATABASE_CONN_MAX_AGE', default=0)
+
 
 # Caching Settings
 # https://docs.djangoproject.com/en/2.0/topics/cache/
@@ -232,8 +299,19 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+# Set up social auth keys from the environment
+# They're necessary for Python Social Auth to work properly,
+# even if the application doesn't participate in the OAuth2 process.
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv("GOOGLE_OAUTH2_KEY")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv("GOOGLE_OAUTH2_SECRET")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
+
 
 # Sites Framework
 # https://docs.djangoproject.com/en/2.0/ref/settings/#std:setting-SITE_ID
@@ -301,6 +379,7 @@ EMAIL_HOST = env.str('EMAIL_SMTP_HOST', default='localhost')
 EMAIL_HOST_USER = env.str('EMAIL_SMTP_USER', default='')
 EMAIL_HOST_PASSWORD = env.str('EMAIL_SMTP_PASSWORD', default='')
 EMAIL_PORT = env.int('EMAIL_SMTP_PORT', default=1025)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 
 # Prefix for emails to administrators
 EMAIL_SUBJECT_PREFIX = '[ADMIN] '
@@ -426,5 +505,18 @@ if DJANGO_ENV == 'production':
         'DSN':
         SENTRY_DSN
     }
+
+SWAGGER_SETTINGS = {
+  'SHOW_REQUEST_HEADERS': True,
+  'USE_SESSION_AUTH': False,
+  'DOC_EXPANSION': 'list',
+  'SECURITY_DEFINITIONS': {
+      'api_key': {
+          'type': 'apiKey',
+          'in': 'header',
+          'name': 'Authorization'
+      }
+  }
+}
 
 django_heroku.settings(locals())
