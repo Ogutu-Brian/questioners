@@ -47,8 +47,9 @@ class ChangePassWordTest(APITestCase):
             "re_new_password": "newpassword@dude",
             "current_password": "notmycurrentpassword"
         }
-        response = self.client.post(URL_LOGIN, self.data_login, format='json')
-        token = response.data.get("auth_token", None)
+        response = self.client.post(URL_LOGIN, self.data_login, format='json') 
+
+        token = response.data.get("token")
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
