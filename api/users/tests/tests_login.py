@@ -9,7 +9,7 @@ from django.test import TestCase
 from contextlib import contextmanager
 
 from rest_framework.reverse import reverse
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
+from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 import os
@@ -88,14 +88,14 @@ class LoginTest(BaseTest):
         """
         response = self.login_user("admin@questioner.com", "@Admin123")
         self.assertIn("token", response.data)
-        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_login_incorrect_credentials(self):
         """
         Test incorrect user login credentials
         """
         response = self.login_user("abraham", "aBu#123")
-        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class GoogleLoginTest(BaseTest):
@@ -108,18 +108,18 @@ class GoogleLoginTest(BaseTest):
         Test correct id_token with existing user
         """
         response = self.social_login(self.token)
-        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_bad_token_google_login(self):
         """
         Tests bad token
         """
         response = self.social_login(self.bad_token)
-        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_no_user_found_google_login(self):
         """
         Tests no user in the database
         """
         response = self.social_login(self.token2)
-        self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
