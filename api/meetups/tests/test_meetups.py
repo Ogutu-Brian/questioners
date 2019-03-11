@@ -307,3 +307,38 @@ class TestPostMeetup(TestMeetupModel):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data[0].get(
             'error'), 'InvalidUrl is not a valid image url')
+
+
+class TestViewMeetups(TestPostMeetup):
+    """
+    Tests for viewing meetups
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.all_meetups_url = "/api/meetups"
+
+    def create_meetup(self) -> None:
+        """
+        A method for creating meetups
+        """
+        self.force_athenticate_admin()
+        self.post_meetup()
+
+    def get_all_meetups(self) -> Response:
+        """
+        Tests that all meetups in the database can be retrieved
+        """
+        response = self.client.get(
+            path=self.all_meetups_url,
+            format='json'
+        )
+        return response
+
+    def test_all_meetups_count(self):
+        """
+        Tests for the fetching of all meetups from the database
+        """
+        for i in range(4):
+            self.create_meetup()
+        self.assertEqual(4, len(self.get_all_meetups.data))
