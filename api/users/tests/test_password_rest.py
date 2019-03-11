@@ -56,7 +56,7 @@ class TestEmailSent(APITestCase):
             
 class TestPasswordReset(APITestCase):
     """
-    test for class to resetnpassword using mail
+    test for class to reset password using mail
     """
 
     def setUp(self):
