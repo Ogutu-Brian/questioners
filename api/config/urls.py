@@ -40,8 +40,6 @@ schema_view = get_schema_view(title=settings.API_BROWSER_HEADER, public=True)
 doc_urls = include_docs_urls(title=settings.API_BROWSER_HEADER)
 api_browser_urls = include('rest_framework.urls')
 auth_urls = include('auth.urls')
-oauth2_urls = include('rest_framework_social_oauth2.urls')
-
 meetup_urls = include('meetups.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
 
