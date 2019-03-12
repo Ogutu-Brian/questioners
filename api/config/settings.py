@@ -168,7 +168,7 @@ JWT_AUTH = {
 DJOSER = {
     'LOGIN_URL': 'api/auth/login/',
     'PASSWORD_RESET_CONFIRM_URL': 'auth/password/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'api/auth/activate/{uid}/{token}',
+    'ACTIVATION_URL': 'api/auth/activate?uid={uid}$token={token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'SEND_ACTIVATION_SMS': True,
@@ -382,12 +382,12 @@ CELERY_TIMEZONE = TIME_ZONE
 # https://docs.djangoproject.com/en/2.0/topics/email/
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = env.str('EMAIL_USE_TLS', default='')
-EMAIL_HOST = env.str('EMAIL_SMTP_HOST', default='localhost')
+EMAIL_USE_TLS = env.str('EMAIL_USE_TLS')
+EMAIL_HOST = env.str('EMAIL_SMTP_HOST', default='')
 EMAIL_HOST_USER = env.str('EMAIL_SMTP_USER', default='')
 EMAIL_HOST_PASSWORD = env.str('EMAIL_SMTP_PASSWORD', default='')
 EMAIL_PORT = env.int('EMAIL_SMTP_PORT', default=1025)
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+
 
 # Prefix for emails to administrators
 EMAIL_SUBJECT_PREFIX = '[ADMIN] '

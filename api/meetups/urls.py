@@ -7,12 +7,16 @@ from meetups.views import (
     GetAllMeetups,
     GetSpecificMeetup,
     GetUpcomingMeetups,
-    UpdateMeetup
+    UpdateMeetup,
+    RsvpView, RspvPostView
 )
+
 urlpatterns = [
     path('meetups', MeetupViews.as_view()),
     path('meetups/', GetAllMeetups.as_view()),
     path('meetups/<str:meetupid>', GetSpecificMeetup.as_view()),
     path('meetups/upcoming/', GetUpcomingMeetups.as_view()),
-    path('update/<id>', UpdateMeetup.as_view())
+    path('update/<id>', UpdateMeetup.as_view()),
+    path('response', RsvpView.as_view()),
+    path('<str:id>/rsvp', RspvPostView.as_view(), name='rsvp')
 ]

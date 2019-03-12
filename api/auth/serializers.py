@@ -70,7 +70,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     """
     User Social Signup
     """
-        
+
     def create(self, validated_data):
         try:
             user = self.perform_create(validated_data)
@@ -261,6 +261,7 @@ class PasswordResetConfirmSerializer(UidAndTokenSerializer,
 class PasswordResetConfirmRetypeSerializer(UidAndTokenSerializer,
                                            PasswordRetypeSerializer):
     pass
+
 
 class SocialAuthSerializer(serializers.Serializer):
     """ Accepts id token"""

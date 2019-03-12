@@ -1,7 +1,10 @@
 """
 Views for operations performed on meetups
 """
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.core.exceptions import ValidationError
+from django.db.utils import DataError
+
 from rest_framework.views import APIView, Response
 from .models import Meetup, Tag, Image
 from .serializers import MeetupSerializer, TagSerializer, UpdateMeetupSerializer, FetchMeetupSerializer
@@ -9,6 +12,12 @@ from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from utils.validators import valid_string, valid_url, valid_meetup
 from rest_framework.request import Request
+
+
+from .models import Meetup, Tag, Image, Rsvp
+from .serializers import MeetupSerializer, TagSerializer, RsvpSerializer
+
+from utils.validators import valid_string, valid_url
 from typing import Tuple
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.pagination import PageNumberPagination
@@ -274,3 +283,55 @@ class UpdateMeetup(APIView):
             )
         return response
     
+class RsvpView(APIView):
+    """
+    We can see all the response from users
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """
+        Get all available RSVP
+        """
+        response = Rsvp.objects.all()
+        serializer = RsvpSerializer(response, many=True)
+        return Response(
+            {"rsvp": serializer.data}
+        )
+
+
+class RspvPostView(APIView):
+    """
+    User can post an Rsvp
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, id):
+        """
+        Create an RSVP
+        """
+        try:
+            queryset = Meetup.objects.all()
+            request.data['responder'] = request.user
+            serializer = RsvpSerializer(data=request.data)
+            # import pdb
+            # pdb.set_trace()
+
+            if serializer.is_valid():
+                Rsvp.objects.update_or_create(
+
+                    meetup = get_object_or_404(queryset, id=id),
+                    responder = request.data.get('responder'),
+                    defaults={
+                        'response' : request.data.get('response'),
+                        'meetup': get_object_or_404(queryset, id=id),
+                        'responder': request.data.get('responder')
+                    }
+                )
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except (ValidationError, DataError) as e:
+            return Response({
+                "error": "No meetup found"
+            }, status=status.HTTP_404_NOT_FOUND)
