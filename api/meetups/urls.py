@@ -18,5 +18,6 @@ urlpatterns = [
     path('meetups/upcoming/', GetUpcomingMeetups.as_view()),
     path('update/<id>', UpdateMeetup.as_view()),
     path('response', RsvpView.as_view()),
-    path('<str:id>/rsvp', RspvPostView.as_view(), name='rsvp')
+    path('<str:id>/rsvp', RspvPostView.as_view(), name='rsvp'),
+    path('meetups/<str:meetupid>/', MeetupViews.as_view())
 ]
