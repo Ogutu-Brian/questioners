@@ -76,15 +76,3 @@ class LoginTest(BaseTest):
         """
         response = self.login_user("abraham", "aBu#123")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
-class GoogleLoginTest(BaseTest):
-    """
-    Tests for user login with Google OAuth2
-    """
-    def test_bad_token_google_login(self):
-        """
-        Tests bad token
-        """
-        response = self.social_login(self.bad_token)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
