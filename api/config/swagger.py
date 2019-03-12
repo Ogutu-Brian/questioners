@@ -45,6 +45,50 @@ def schema_view_swagger(request):
                         )
                     ],
                     description = 'Using google authentication to login'
+                ),
+                'reset password': coreapi.Link(
+                    url = '/api/auth/reset_password/',
+                    action = 'POST',
+                    fields = [
+                        coreapi.Field(
+                            name = 'email',
+                            required = True,
+                            location = 'form',
+                            description = 'Email used for registration required'
+                        )
+                    ],
+                    description = 'No authentication required'
+                ),
+                'confirm rest': coreapi.Link(
+                    url = '/api/auth/reset_password_confirm/',
+                    action = 'POST',
+                    fields = [
+                        coreapi.Field(
+                            name = 'uid',
+                            required = True,
+                            location = 'form',
+                            description = 'User ID from the confirmation email'
+                        ),
+                        coreapi.Field(
+                            name = 'token',
+                            required = True,
+                            location = 'form',
+                            description = 'Tokens from the confirmation email'
+                        ),
+                        coreapi.Field(
+                            name = 'new_password',
+                            required = True,
+                            location = 'form',
+                            description = 'New_password'
+                        ),
+                        coreapi.Field(
+                            name = 're_new_password',
+                            required = True,
+                            location = 'form',
+                            description = 'Re enter new password'
+                        )
+                    ],
+                    description = 'No authentication required'
                 )
             }
         }
