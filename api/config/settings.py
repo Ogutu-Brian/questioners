@@ -92,11 +92,12 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
@@ -112,10 +113,8 @@ REST_FRAMEWORK = {
         'user': env.str(
             'DJANGO_DEFAULT_THROTTLE_RATE_USER', default='120/minute'),
     },
-    'DEFAULT_PAGINATION_CLASS':
-    'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE':
-    env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
+    'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE':env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.SearchFilter',
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -150,7 +149,7 @@ JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LEEWAY': 0,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=24),
     'JWT_AUDIENCE': None,
     'JWT_ISSUER': None,
 
@@ -524,7 +523,9 @@ SWAGGER_SETTINGS = {
             'in': 'header',
             'name': 'Authorization'
         }
-    }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
 }
 
 django_heroku.settings(locals())
