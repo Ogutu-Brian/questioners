@@ -335,4 +335,3 @@ class SocialAuthView(generics.CreateAPIView):
         except:
             data={'Message': 'No user with the given credentials found'}
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-        return Response({"message": "password successfully reset"}, status=status.HTTP_204_NO_CONTENT)
