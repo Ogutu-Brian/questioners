@@ -11,7 +11,11 @@ from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.authentication import get_authorization_header
 from rest_framework.views import APIView
+from rest_framework_jwt.settings import api_settings
 
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import MissingBackend
+from rest_framework_jwt.settings import api_settings
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
 from djoser.conf import settings
@@ -252,8 +256,7 @@ class PasswordResetView(utils.ActionViewMixin, generics.GenericAPIView):
     def _action(self, serializer):
         for user in self.get_users(serializer.data['email']):
             self.send_password_reset_email(user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+        return Response({"message": "reset link sent to your mail"}, status=status.HTTP_200_OK)
     def get_users(self, email):
         if self._users is None:
             email_field_name = get_user_email_field_name(User)
@@ -284,7 +287,7 @@ class PasswordResetConfirmView(utils.ActionViewMixin, generics.GenericAPIView):
         serializer.user.save()
         if self.request.user.is_authenticated:
             utils.logout_user(self.request)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "password successfully reset"}, status=status.HTTP_200_OK)
 
 
 class SocialAuthView(generics.CreateAPIView):

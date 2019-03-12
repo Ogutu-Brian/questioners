@@ -76,4 +76,3 @@ class LoginTest(BaseTest):
         """
         response = self.login_user("abraham", "aBu#123")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-

@@ -66,17 +66,6 @@ google-auth==1.6.3
 google-auth-httplib2==0.0.3
 gunicorn==19.9.0
 httplib2==0.12.1
-google==2.0.2
-google-api-python-client==1.7.8
-google-auth==1.6.3
-google-auth-httplib2==0.0.3
-google-oauth==1.0.1
-httplib2==0.12.1
-gunicorn==19.9.0
-google-api-python-client==1.7.8
-google-auth==1.6.3
-google-auth-httplib2==0.0.3
-httplib2==0.12.1
 idna==2.7
 inflection==0.3.1
 ipdb==0.11
@@ -135,6 +124,7 @@ pylint==2.3.1
 pyrsistent==0.14.11
 pytest==4.3.0
 pytest-cov==2.6.1
+python3-openid==3.1.0
 pytz==2018.5
 PyYAML==3.13
 redis==2.10.6
