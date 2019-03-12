@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
 from django.core import exceptions as django_exceptions
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext_lazy as _
@@ -15,8 +16,11 @@ User = get_user_model()
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    email = serializers.CharField()
     password = serializers.CharField(
         style={'input_type': 'password'}, write_only=True)
+
+    token = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -57,6 +61,40 @@ class SignUpSerializer(serializers.ModelSerializer):
                 user.is_active = False
                 user.save(update_fields=['is_active'])
         return user
+
+    def get_token(self, token):
+        return default_token_generator.make_token(token)
+
+
+class CreateUserSerializer(serializers.ModelSerializer):
+    """
+    User Social Signup
+    """
+        
+    def create(self, validated_data):
+        try:
+            user = self.perform_create(validated_data)
+        except IntegrityError:
+            raise exceptions.AlreadyExists(
+                _('The provided email address already has an account.'))
+
+        return user
+
+    @staticmethod
+    def perform_create(validated_data):
+        with transaction.atomic():
+            user = User.objects.create_user(**validated_data)
+            if user:
+                user.is_active = True
+                user.save(update_fields=['is_active'])
+        return user
+
+    class Meta:
+        model = User
+        fields = (
+            User._meta.pk.name,
+            'email',
+        )
 
 
 class EmailAccountSerializer(serializers.Serializer):

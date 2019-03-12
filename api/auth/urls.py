@@ -3,7 +3,8 @@ from django.urls import path
 from rest_framework_jwt.views import ObtainJSONWebToken
 from .views import (SignUpView, ResendActivationView, ActivationView,
                     LoginView, LogoutView, ChangePasswordView, ChangeEmailView,
-                    PasswordResetView, PasswordResetConfirmView, SocialAuthView)
+                    PasswordResetView, PasswordResetConfirmView, SocialAuthView,
+                    SocialSigUpView)
 
 
 urlpatterns = [     
@@ -20,4 +21,5 @@ urlpatterns = [
      path('reset_password_confirm/', PasswordResetConfirmView.as_view(),
           name='reset_password_confirm'),
      path('google_oauth2/', SocialAuthView.as_view(), name='social'),
+     path('social/signup', SocialSigUpView.as_view(), name='social_signup')
 ]

@@ -9,6 +9,8 @@ from rest_framework import generics, permissions, status, views
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.authentication import get_authorization_header
+from rest_framework.views import APIView
 
 from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
@@ -24,6 +26,9 @@ from users.models import User
 from config import exceptions
 from . import serializers
 from . import mailer
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 User = get_user_model()
 
@@ -71,6 +76,61 @@ class SignUpView(generics.CreateAPIView):
         elif settings.SEND_CONFIRMATION_EMAIL:
             mailer.ConfirmationEmail(self.request, context, recipient).send()
 
+class SocialSigUpView(APIView):
+    """
+    A signup endpoint using google auth
+    """
+    
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        auth = get_authorization_header(request).split()
+        not_active = True
+        token = auth[1]
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                token, requests.Request(), '407408718192.apps.googleusercontent.com')
+
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer')
+                
+            user, created = User.objects.update_or_create(
+                email=idinfo.get('email'),
+                defaults={
+                    'name': idinfo.get('name'),
+                    'nick_name': idinfo.get('given_name'),
+                }
+            )
+            if(created):
+                user.is_active = False
+                user.save()
+            else:
+                if(user.is_active):
+                    not_active = False
+            if(not_active):
+                created_user = User.objects.get(email=idinfo.get('email'))
+                signals.user_registered.send(sender=self.__class__, user=user,
+                                             request=self.request)
+                context = {'user': user}
+                recipient = [get_user_email(user)]
+                if settings.SEND_ACTIVATION_EMAIL:
+                    mailer.ActivationEmail(
+                        self.request, context, recipient).send()
+                elif settings.SEND_CONFIRMATION_EMAIL:
+                    mailer.ConfirmationEmail(
+                        self.request, context, recipient).send()
+                response = {
+                    "message": "A verification mail has been sent to you, please check your mail"
+                }, status.HTTP_201_CREATED
+            else:
+                response = {
+                    "error": "This account had been activated"
+                }, status.HTTP_400_BAD_REQUEST
+            return Response(response[0],response[1])
+        except ValueError as e:
+            return Response(
+                {'error':str(e)},status.HTTP_400_BAD_REQUEST
+            )
 
 class ResendActivationView(utils.ActionViewMixin, generics.GenericAPIView):
     serializer_class = serializers.EmailAccountSerializer

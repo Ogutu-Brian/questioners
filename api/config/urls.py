@@ -43,6 +43,9 @@ auth_urls = include('auth.urls')
 meetup_urls = include('meetups.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
 
+meetup_urls = include('meetups.urls')
+oauth2_urls = include('rest_framework_social_oauth2.urls')
+
 urlpatterns = [
     path('auth/', oauth2_urls),
     path('api/', doc_urls),
@@ -52,6 +55,7 @@ urlpatterns = [
     path('api/schema/swagger/', schema_view_swagger),
     path('api/browser/', api_browser_urls),
     path('api/admin/', admin.site.urls),
+    path('socialauth/', include('rest_framework_social_oauth2.urls')),
 ]
 
 urlpatterns += router.urls
