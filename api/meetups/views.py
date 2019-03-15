@@ -12,14 +12,8 @@ from .models import Meetup, Tag, Image
 from .serializers import MeetupSerializer, TagSerializer, UpdateMeetupSerializer, FetchMeetupSerializer
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from utils.validators import valid_string, valid_url, valid_meetup
+from utils.validators import valid_meetup
 from rest_framework.request import Request
-
-
-from .models import Meetup, Tag, Image, Rsvp
-from .serializers import MeetupSerializer, TagSerializer, RsvpSerializer
-
-from utils.validators import valid_string, valid_url
 from typing import Tuple
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.pagination import PageNumberPagination
@@ -152,7 +146,7 @@ class GetAllMeetups(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
         else:
             paginator = PageNumberPagination()
-            paginator.page_size = 5
+            paginator.page_size = 1
             result_page = paginator.paginate_queryset(meetups, request)
             serializer = FetchMeetupSerializer(result_page, many=True)
             response = paginator.get_paginated_response(serializer.data)
@@ -204,7 +198,7 @@ class GetUpcomingMeetups(APIView):
             scheduled_date__gte=timezone.now())
         if upcoming_meetups:
             paginator = PageNumberPagination()
-            paginator.page_size = 5
+            paginator.page_size = 1
             result_page = paginator.paginate_queryset(
                 upcoming_meetups, request)
             serializer = FetchMeetupSerializer(result_page, many=True)
