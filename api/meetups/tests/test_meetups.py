@@ -1,80 +1,21 @@
 """
 Tests for meetup views and models
 """
-from django.test import TestCase
-from meetups.models import Meetup
-from rest_framework.test import APIClient
-from datetime import datetime
-import django
-import pytz
-from users.models import User
+from meetups.tests.initial_setup import TestSetUp
 from rest_framework import status
+import django
+from meetups.models import Meetup
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
-import json
-import os
-from typing import Dict
-from rest_framework.views import Response
 
 
-class TestMeetupModel(TestCase):
+class TestMeetupModel(TestSetUp):
     """
     Test for Meetup model
     """
 
     def setUp(self):
-        """
-        Setup for testing
-        """
-        self.user_data = self.get_test_data().get('user_data')
-        user = self.user_data.get('user')
-        admin = self.user_data.get('admin')
-        self.user = User.objects.create(
-            email=user.get('email'),
-            name=user.get('name'),
-            nick_name=user.get('nick_name'),
-            password=user.get('password')
-        )
-        self.user.is_active = True
-        self.user.save()
-        self.admin = User.objects.create(
-            email=admin.get('email'),
-            name=admin.get('name'),
-            nick_name=admin.get('nick_name'),
-            password=admin.get('password')
-        )
-        self.admin.is_active = True
-        self.admin.is_staff = True
-        self.admin.save()
-        Meetup.objects.create(
-            title='Test Driven Development',
-            body='Developers need to discusss the correct approach of doing test driven development',
-            location='Andela Campus',
-            creator=self.admin,
-            scheduled_date=pytz.utc.localize(datetime.strptime(
-                'Jun 2 2019 2:30PM', '%b %d %Y %I:%M%p')
-            ))
-        Meetup.objects.create(
-            title='Cauchy Linear Homogenous Equations',
-            body='A Math meetup to discuss Cauchy linear homogeneous equations',
-            location='JKUAT',
-            creator=self.admin,
-            scheduled_date=pytz.utc.localize(datetime.strptime(
-                'Dec 2 2019 2:30PM', '%b %d %Y %I:%M%p')
-            ))
-
-    def get_test_data(self) -> Dict:
-        """
-        Reads test data from test_data.json file
-        """
-        __location__ = os.path.realpath(
-            os.path.join(
-                os.getcwd(),
-                os.path.dirname(__file__)
-            )
-        )
-        with open(os.path.join(__location__, 'test_data.json')) as record:
-            data = json.load(record)
-        return data
+        super().setUp()
 
     def test_saving_into_database(self) -> None:
         """
@@ -82,38 +23,18 @@ class TestMeetupModel(TestCase):
         """
         self.assertEqual(Meetup.objects.all().count(), 2)
 
-    def test_duplicate_topic(self):
+    def test_integrity(self):
         """
-        Tests duplication of topics in the database in same venue and same time
+        Tests if a meetup can be created by uknownimous user
         """
         try:
             message = 'successfully created new meetup'
             Meetup.objects.create(
-                title='Cauchy Linear Homogenous Equations',
+                title='Math Meetup',
                 body='Time to meet the authors of logic',
                 location='JKUAT',
-                scheduled_date=pytz.utc.localize(datetime.strptime(
-                    'Dec 2 2019 2:30PM', '%b %d %Y %I:%M%p')
-                ))
-        except django.db.utils.IntegrityError:
-            message = 'Error occured during creation of meetup'
-        finally:
-            self.assertEqual(
-                'Error occured during creation of meetup', message)
-
-    def test_duplicate_meetup(self) -> None:
-        """
-        Tests creation of meetup with similar body to the same venue amd same time
-        """
-        try:
-            message = 'successfully created new meetup'
-            Meetup.objects.create(
-                title='Mathematics Meetup',
-                body='A Math meetup to discuss Cauchy linear homogeneous equations',
-                location='JKUAT',
-                scheduled_date=pytz.utc.localize(datetime.strptime(
-                    'Dec 2 2019 2:30PM', '%b %d %Y %I:%M%p')
-                ))
+                scheduled_date=timezone.now()+timezone.timedelta(days=3)
+            )
         except django.db.utils.IntegrityError:
             message = 'Error occured during creation of meetup'
         finally:
@@ -125,49 +46,18 @@ class TestMeetupModel(TestCase):
         Tests for persistence of data iin the database
         """
         title = 'Cauchy Linear Homogenous Equations'
-        scheduled_date = pytz.utc.localize(datetime.strptime(
-            'Dec 2 2019 2:30PM', '%b %d %Y %I:%M%p')
-        )
-        meetup = Meetup.objects.filter(
-            title=title, scheduled_date=scheduled_date)[0]
-        self.assertEqual(meetup.scheduled_date, scheduled_date)
+        meetup = Meetup.objects.filter(title=title)[0]
         self.assertEqual(
             meetup.body, 'A Math meetup to discuss Cauchy linear homogeneous equations')
 
 
-class TestPostMeetup(TestMeetupModel):
+class TestPostMeetup(TestSetUp):
     """
     Class for testing endpoints for meetups
     """
 
     def setUp(self):
         super().setUp()
-        self.meetup_data = self.get_test_data().get('meetup_data')
-        self.post_meetup_url = '/api/meetups'
-        self.client = APIClient()
-
-    def post_meetup(self) -> Response:
-        """
-        Method for posting meetups during testing
-        """
-        response = self.client.post(
-            path=self.post_meetup_url,
-            data=self.meetup_data,
-            format='json'
-        )
-        return response
-
-    def force_athenticate_admin(self) -> None:
-        """
-        Force authenticates an admin user for testing
-        """
-        self.client.force_authenticate(user=self.admin)
-
-    def force_authenticate_user(self) -> None:
-        """
-        Force authenticates mormal user for testing
-        """
-        self.client.force_authenticate(user=self.user)
 
     def test_successfull_creation_of_meetup(self) -> None:
         """
@@ -177,11 +67,11 @@ class TestPostMeetup(TestMeetupModel):
         self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         response = self.post_meetup()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get('title'),
+        self.assertEqual(response.data.get('data').get('title'),
                          self.meetup_data.get('title'))
-        self.assertEqual(response.data.get('body'),
+        self.assertEqual(response.data.get('data').get('body'),
                          self.meetup_data.get('body'))
-        self.assertEqual(response.data.get('location'),
+        self.assertEqual(response.data.get('data').get('location'),
                          self.meetup_data.get('location'))
 
     def test_unauthenticated_user(self) -> None:
@@ -196,9 +86,8 @@ class TestPostMeetup(TestMeetupModel):
         """
         Tests creation of duplicate meetups
         """
-        self.force_athenticate_admin()
-        self.post_meetup()
-        response = self.post_meetup()
+        self.create_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_non_admin_user(self) -> None:
@@ -216,43 +105,38 @@ class TestPostMeetup(TestMeetupModel):
         """
         Tests for successful creation of meetup without images
         """
-        self.force_athenticate_admin()
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_missing_tags(self) -> None:
         """
         Tests for successful creation of meetups without tags
         """
-        self.force_athenticate_admin()
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_invalid_meetup_date(self) -> None:
         """
         Tests for posting of invalid date
         """
-        self.force_athenticate_admin()
         self.meetup_data['scheduled_date'] = 'Invalid Date'
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_missing_meetup_title(self) -> None:
         """
         Tests posting of meetups without a meetup title
         """
-        self.force_athenticate_admin()
         self.meetup_data['title'] = ""
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_missing_meetup_body(self) -> None:
         """
         Tests missing meetup body
         """
-        self.force_athenticate_admin()
         self.meetup_data['body'] = ""
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_missing_meetup_location(self) -> None:
@@ -268,9 +152,8 @@ class TestPostMeetup(TestMeetupModel):
         """
         Tests for invalid meetup titles
         """
-        self.force_athenticate_admin()
         self.meetup_data['title'] = '?????//*&^£&%'
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data[0].get(
             'error'), '?????//*&^£&% is not a valid meetup title')
@@ -279,9 +162,8 @@ class TestPostMeetup(TestMeetupModel):
         """
         Tests for an invalid meetup body
         """
-        self.force_athenticate_admin()
         self.meetup_data['body'] = '#?-234+34```'
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data[0].get(
             'error'), '#?-234+34``` is not a valid meetup body')
@@ -290,9 +172,8 @@ class TestPostMeetup(TestMeetupModel):
         """
         Tests for invalid meetup location input
         """
-        self.force_athenticate_admin()
         self.meetup_data['location'] = '%23...*&^^^'
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data[0].get(
             'error'), '%23...*&^^^ is not a valid meetup location')
@@ -301,9 +182,97 @@ class TestPostMeetup(TestMeetupModel):
         """
         Tests for an invalid image url for meetup
         """
-        self.force_athenticate_admin()
         self.meetup_data['images'] = ['InvalidUrl']
-        response = self.post_meetup()
+        response = self.create_meetup()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data[0].get(
             'error'), 'InvalidUrl is not a valid image url')
+
+    def tes_past_meetup_date(self) -> None:
+        """
+        Tests scheduling of meetup dates on a passed daye
+        """
+        self.meetup_data['scheduled_date'] = '2019-03-04 06:00Z'
+        response = self.create_meetup()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class TestViewMeetups(TestSetUp):
+    """
+    Tests for viewing meetups
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.meetup_id = str(Meetup.objects.all()[0].id)
+
+    def test_all_meetups_response_status(self) -> None:
+        """
+        Tests for the fetching of all meetups from the database
+        """
+        response = self.get_all_meetups()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_meetups_not_found(self) -> None:
+        """
+        Tests for no meeetups existing in the database
+        """
+        self.clear_meetups()
+        response = self.get_all_meetups()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_invalid_meetup_id(self) -> None:
+        """
+        Tests for invalid meetup id
+        """
+        meetup_id = '390239202SFHEIFHJHH'
+        response = self.get_specific_meetup(meetup_id=meetup_id)
+        self.assertEqual(response.data.get('error'),
+                         'A meetup with that id does not exist')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_specific_meetup(self) -> None:
+        """
+        Tests fetching of a specific meetup
+        """
+        response = self.get_specific_meetup(meetup_id=self.meetup_id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_number_meetups(self) -> None:
+        """
+        Tests the number of meetups returned when specific meetup endpoint
+        """
+        response = self.get_specific_meetup(meetup_id=self.meetup_id)
+        self.assertEqual(len(response.data.get('data')), 1)
+
+    def test_zero_upcoming_meetups(self) -> None:
+        """
+        Tests zero upcoming meetups
+        """
+        self.clear_meetups()
+        response = self.get_upcoming_meetups()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data.get('error'),
+                         'There are no upcoming meetups')
+
+    def test_get_upcoming_status(self) -> None:
+        """
+        Tests status when upcoming meetups are successfully made
+        """
+        response = self.get_upcoming_meetups()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_past_meetups_inclusion(self) -> None:
+        """
+        Test if past meetups are included in upcoming meetups
+        """
+        self.clear_meetups()
+        Meetup.objects.create(
+            title='Cauchy Linear Homogenous Equations',
+            body='Time to meet the authors of logic',
+            location='JKUAT',
+            scheduled_date=timezone.now()+timezone.timedelta(days=-3),
+            creator=self.admin
+        )
+        response = self.get_upcoming_meetups()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

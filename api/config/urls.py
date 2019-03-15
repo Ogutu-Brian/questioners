@@ -41,7 +41,6 @@ doc_urls = include_docs_urls(title=settings.API_BROWSER_HEADER)
 api_browser_urls = include('rest_framework.urls')
 auth_urls = include('auth.urls')
 meetup_urls = include('meetups.urls')
-oauth2_urls = include('rest_framework_social_oauth2.urls')
 
 meetup_urls = include('meetups.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
@@ -56,7 +55,7 @@ urlpatterns = [
     path('api/schema/swagger/', schema_view_swagger),
     path('api/browser/', api_browser_urls),
     path('api/admin/', admin.site.urls),
-    path('socialauth/', include('rest_framework_social_oauth2.urls')),
+    path('socialauth/', oauth2_urls),
 ]
 
 urlpatterns += router.urls

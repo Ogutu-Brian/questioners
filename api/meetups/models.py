@@ -20,6 +20,12 @@ class Tag(models.Model):
     def __str__(self):
         return self.tag_name
 
+    def get_tag_name(self) -> str:
+        """
+        Returns tag name of the object
+        """
+        return self.tag_name
+
 
 class Image(models.Model):
     """
@@ -32,6 +38,12 @@ class Image(models.Model):
         unique_together = ('image_url',)
 
     def __str__(self):
+        return self.image_url
+
+    def get_image_url(self) -> str:
+        """
+        Returns the image url
+        """
         return self.image_url
 
 
