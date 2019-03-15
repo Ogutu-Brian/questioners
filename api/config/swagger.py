@@ -247,8 +247,15 @@ def schema_view_swagger(request):
                     description='Create a new Meetup'
                 ),
                 'all meetups': coreapi.Link(
-                    url='/api/meetups/',
+                    url='/api/meetups/?page={pageNumber}',
                     action='GET',
+                    fields =[
+                        coreapi.Field(
+                            name='pageNumber',
+                            required=True,
+                            location='path'
+                        )
+                    ],
                     description='View all meetups'
                 ),
                 'specific meetup': coreapi.Link(
@@ -264,8 +271,15 @@ def schema_view_swagger(request):
                     description='View specific meetup'
                 ),
                 'upcoming meetups': coreapi.Link(
-                    url='/api/meetups/upcoming/',
+                    url='/api/meetups/upcoming/?page={pageNumber}',
                     action='GET',
+                    fields =[
+                        coreapi.Field(
+                            name='pageNumber',
+                            required=True,
+                            location='path'
+                        )
+                    ],
                     description='View upcoming meetups'
                 )
             }
