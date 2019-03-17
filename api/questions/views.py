@@ -32,8 +32,8 @@ class QuestionViews(APIView):
                         "error": "Question already exist"
                     }, status=status.HTTP_400_BAD_REQUEST)
                 Question.objects.update_or_create(
-                    title=request.data.get('title'),
-                    body=request.data.get('body'),
+                    title=request.data.get('title').strip(),
+                    body=request.data.get('body').strip(),
                     defaults={
                         'meetup': get_object_or_404(queryset, id=id),
                         'created_by': request.data.get('created_by')
