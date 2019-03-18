@@ -56,4 +56,3 @@ def valid_meetup(request: Request) -> Tuple:
                 })
                 break
     return is_valid, errors
-

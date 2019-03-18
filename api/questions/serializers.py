@@ -10,3 +10,12 @@ class QuestionsSerializer(serializers.ModelSerializer):
         fields = (
             'title', 'body'
         )
+
+class ViewQuestionsSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for fetching all questions specific to that meetup
+    """
+    class Meta:
+        model = Question
+        fields = '__all__'
+

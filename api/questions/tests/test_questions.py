@@ -69,3 +69,24 @@ class PostQuestionTest(BaseTest):
         self.is_authenticated()
         response = self.post_with_invalid_meetup()
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class ViewQuestionTest(BaseTest):
+    """
+    Tests for viewing questions posted on meetups
+    """
+
+    def test_getting_question_with_valid_meetup_id(self):
+        """
+        Test view questions with valid meetup_id
+        """
+        response = self.get_questions_with_valid_meetup_id()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_geeting_meetups_with_no_questions(self):
+        """
+        Test viewing questions with valid meetup_id but no questions_posted
+        """
+        response = self.get_question_with_invalid_meetup()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.content,
+                         b'{"error":"There are no questions"}')

@@ -81,7 +81,6 @@ class BaseTest(APITestCase):
             content_type="application/json"
         )
         return response
-    
     def post_without_title(self):
         """
         Post question without a title
@@ -90,13 +89,14 @@ class BaseTest(APITestCase):
         url = reverse('question', args=[meetup_id])
         response = self.client.post(
             url,
-            data = json.dumps({
+            data=json.dumps({
                 "title": "",
                 "body": "We test models cause we also want to know if the are working"
             }),
             content_type="application/json"
         )
         return response
+
     def post_without_body(self):
         """
         Post question without body
@@ -105,7 +105,7 @@ class BaseTest(APITestCase):
         url = reverse('question', args=[meetup_id])
         response = self.client.post(
             url,
-            data = json.dumps({
+            data=json.dumps({
                 "title": "Why are we testing models",
                 "body": ""
             }),
@@ -120,10 +120,37 @@ class BaseTest(APITestCase):
         url = reverse('question', args=[meetup_id])
         response = self.client.post(
             url,
-            data = json.dumps({
+            data=json.dumps({
                 "title": "Why are we testing views with invalid meetup",
                 "body": "We test models cause we also want to know if the are working"
             }),
             content_type="application/json"
         )
+        return response
+
+    def get_questions_with_valid_meetup_id(self):
+        """
+        Post question to invalid meetup
+        """
+        meetup_id = str(self.meetup.id)
+        url = reverse('view_questions', args=[meetup_id])
+        response = self.client.get(url)
+        return response
+
+    def get_question_with_invalid_meetup(self):
+        """
+        view question to invalid meetup
+        """
+        meetup_id = "f1d63c02-039d-4bdf-806b-45c698f47c3b"
+        url = reverse('view_questions', args=[meetup_id])
+        response = self.client.get(url)
+        return response
+
+    def get_question_with_invalid_uuid(self):
+        """
+        view question to invalid meetup uuid
+        """
+        meetup_id = "f"
+        url = reverse('view_questions', args=[meetup_id])
+        response = self.client.get(url)
         return response

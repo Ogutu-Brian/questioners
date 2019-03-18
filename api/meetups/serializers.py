@@ -3,7 +3,7 @@ from djoser import utils
 from django.utils import timezone
 from .models import Meetup, Tag
 from django.contrib.auth import authenticate, get_user_model
-from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 
 
 from rest_framework import serializers
@@ -84,4 +84,6 @@ class RsvpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rsvp
         fields = ("id", "response", "created_on", "updated_on")
-        read_only_fields = ("id", "created_on", "updated_on")
+
+
+read_only_fields = ("id", "created_on", "updated_on")

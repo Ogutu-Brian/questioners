@@ -99,8 +99,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
@@ -116,8 +114,8 @@ REST_FRAMEWORK = {
         'user': env.str(
             'DJANGO_DEFAULT_THROTTLE_RATE_USER', default='120/minute'),
     },
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
+    'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE':env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.SearchFilter',
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -517,17 +515,16 @@ if DJANGO_ENV == 'production':
     }
 
 SWAGGER_SETTINGS = {
-    'SHOW_REQUEST_HEADERS': True,
-    'USE_SESSION_AUTH': False,
-    'DOC_EXPANSION': 'list',
-    'SECURITY_DEFINITIONS': {
-        'api_key': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
-        }
-    },
-    'USE_SESSION_AUTH': False
+  'SHOW_REQUEST_HEADERS': True,
+  'USE_SESSION_AUTH': False,
+  'DOC_EXPANSION': 'list',
+  'SECURITY_DEFINITIONS': {
+      'api_key': {
+          'type': 'apiKey', 
+          'in': 'header',
+          'name': 'Authorization'
+      }
+  }
 }
 
 django_heroku.settings(locals())
