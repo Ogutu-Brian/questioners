@@ -114,7 +114,7 @@ class BaseTest(APITestCase):
             content_type="application/json"
         )
         return response
-
+        
     def post_with_invalid_meetup(self):
         """
         Post question to invalid meetup

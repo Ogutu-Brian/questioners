@@ -83,25 +83,12 @@ class BaseTest(APITestCase):
         )
         self.question3.save()
 
-    def login_user(self, email="", password=""):
-        """
-        Login a user
-        """
-        url = reverse("user_login")
-        return self.client.post(
-            url,
-            data=json.dumps({
-                "email": "admin@questioner.com",
-                "password": "@Admin123"
-            }),
-            content_type="application/json"
-        )
 
-    def is_authenticated(self):
+    def is_authenticated(self, user):
         """
         Authenticate a user and get the token
         """
-        token, created = Token.objects.get_or_create(user=self.user1)
+        token, created = Token.objects.get_or_create(user=user)
         self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
 
     def post_answer(self):
@@ -109,7 +96,7 @@ class BaseTest(APITestCase):
         Post an answer to a specific question
         """
         meetup_id = str(self.meetup.id)
-        question_id = str(self.question1)
+        question_id = str(self.question1.id)
         url = reverse('post_answer', args=[meetup_id, question_id])
 
         response = self.client.post(
@@ -121,12 +108,60 @@ class BaseTest(APITestCase):
         )
         return response
 
+    def get_answer(self):
+        """
+        Get an answer to a specific question
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question1.id)
+        url = reverse('Get_all_answers', args=[meetup_id, question_id])
+
+        response = self.client.get(
+            url,
+            content_type="application/json"
+        )
+        return response
+
+    def post_answer_with_special_character(self):
+        """
+        Post an answer to a specific question
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question1.id)
+        url = reverse('post_answer', args=[meetup_id, question_id])
+
+        response = self.client.post(
+            url,
+            data=json.dumps({
+                "body": "!@#$%^&"
+            }),
+            content_type="application/json"
+        )
+        return response
+
     def post_answer_with_no_meetup(self):
         """
         Post an answer to a specific question with no meetup
         """
         meetup_id = str(1)
-        question_id = str(self.question1)
+        question_id = str(self.question1.id)
+        url = reverse('post_answer', args=[meetup_id, question_id])
+
+        response = self.client.post(
+            url,
+            data=json.dumps({
+                "body": "Will there be wine"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def post_answer_without_question(self):
+        """
+        Post an answer with no question
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(2)
         url = reverse('post_answer', args=[meetup_id, question_id])
 
         response = self.client.post(
@@ -134,6 +169,37 @@ class BaseTest(APITestCase):
             data=json.dumps({
                 "body": "Will there be food"
             }),
+            content_type="application/json"
+        )
+        return response
+
+    def post_answer_without_body(self):
+        """
+        Post an answer to a specific question
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question1.id)
+        url = reverse('post_answer', args=[meetup_id, question_id])
+
+        response = self.client.post(
+            url,
+            data=json.dumps({
+                "body": " "
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def get_answer_without_question(self):
+        """
+        Get an answer to a specific question
+        """
+        meetup_id = str(1)
+        question_id = str(1)
+        url = reverse('Get_all_answers', args=[meetup_id, question_id])
+
+        response = self.client.get(
+            url,
             content_type="application/json"
         )
         return response

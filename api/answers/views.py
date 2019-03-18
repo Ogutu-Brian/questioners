@@ -13,63 +13,108 @@ from rest_framework.decorators import permission_classes, api_view
 from .models import Answer
 from questions.models import Question
 from meetups.models import Meetup
-from .serializers import AnswerSerializer
+from .serializers import AnswerSerializer, GetAnswerSerializer
 from utils.validators import valid_string
 
 
 class AnswersPostView(APIView):
-    """
+    '''
     Views for posting an answer
-    """
+    '''
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, id, meetupId):
-        """
+    def post(self, request, questionId, meetupId):
+        '''
         Post an answer
-        """
+        '''
         try:
             queryset = Meetup.objects.get(id=meetupId)
+            try:
+                queryset = Question.objects.all()
+                request.data['creator'] = request.user
+                serializer = AnswerSerializer(data=request.data)
+                answer_body = Answer.objects.filter(
+                    body=request.data.get('body'))
+
+                if valid_string(request.data.get('body')) == False:
+                    return Response(
+                        {
+                            'error': 'Please enter a valid answer'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                if serializer.is_valid():
+                    if answer_body:
+                        return Response(
+                            {
+                                'error': 'Answer already exist'
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    Answer.objects.update_or_create(
+                        body=request.data.get('body').strip(),
+                        defaults={
+                            'question': get_object_or_404(queryset, id=questionId),
+                            'creator': request.data.get('creator')
+                        }
+                    )
+                    return Response(
+                        serializer.data,
+                        status=status.HTTP_201_CREATED
+                    )
+                return Response(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except ValidationError:
+                return Response(
+                    {
+                        'error': 'Question does not exist'
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
         except ValidationError:
             return Response(
                 {
-                    "error": "Meetup doesn't exist"
+                    'error': 'Meetup does not exist'
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        try:
-            queryset = Question.objects.all()
-            request.data['creator'] = request.user
-            serializer = AnswerSerializer(data=request.data)
-            answer_body = Answer.objects.filter(body=request.data.get('body'))
 
-            if serializer.is_valid():
-                if answer_body:
-                    return Response(
-                        {
-                            "error": "Answer already exist"
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                Answer.objects.update_or_create(
-                    body=request.data.get('body').strip(),
-                    defaults={
-                        'question': get_object_or_404(queryset, id=id),
-                        'creator': request.data.get('creator')
-                    }
-                )
+class GetAnswerView(APIView):
+    """
+    We can see all the answers from users in a question
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, meetupId, questionId):
+        """
+        Get all available RSVP
+        """
+        try:
+            Meetup.objects.get(id=meetupId)
+            try:
+                Question.objects.filter(id=questionId, meetup=meetupId)
+                response = Answer.objects.all()
+                serializer = GetAnswerSerializer(response, many=True)
                 return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
+                    {"Answers": serializer.data}
                 )
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            except ValidationError:
+                return Response(
+                    {
+                        'error': 'Question does not exist'
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
         except ValidationError:
             return Response(
                 {
-                    "error": "Question doesn't exist"
+                    'error': 'Meetup does not exist'
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
@@ -89,12 +134,14 @@ class UpdateAnswer(APIView):
             return Response(data=error, status=status.HTTP_404_NOT_FOUND)
 
         try:
+            Question.objects.filter(id=questionId, meetup=meetupId)
             queryset = Question.objects.get(id=questionId)
         except ValidationError:
             error = {'error': 'The specified question does not exist'}
             return Response(data=error, status=status.HTTP_404_NOT_FOUND)
 
         try:
+            Answer.objects.filter(id=answerId, question=questionId)
             answer = Answer.objects.get(id=answerId)
             userid = request.user.id
             if userid != answer.creator.id:
