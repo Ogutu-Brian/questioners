@@ -16,7 +16,7 @@ import coreapi
 def schema_view_swagger(request):
     schema = coreapi.Document(
         title='Questioner API',
-        url='https://questioners-two-staging.herokuapp.com/',
+        url='https://questioners-two-staging.herokuapp.com/',  # replace with your url
         content={
             'Users': {
                 'signup': coreapi.Link(
