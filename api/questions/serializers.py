@@ -4,6 +4,7 @@ from users.models import User
 from users.serializers import FetchUserSerializer
 
 
+
 class QuestionsSerializer(serializers.ModelSerializer):
     """
     serializer for Question model

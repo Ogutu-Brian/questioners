@@ -18,10 +18,12 @@ from meetups.models import Meetup
 from users.models import User
 # Create your tests here.
 
+
 class BaseTest(APITestCase):
     """
     The base where are default test case settings kept
     """
+
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects._create_user(
@@ -48,7 +50,7 @@ class BaseTest(APITestCase):
             location='Andela Campus',
             creator=self.user,
             scheduled_date=timezone.now() + timezone.timedelta(days=3)
-            )
+        )
         self.meetup.save()
 
         self.question = Question.objects.create(
@@ -57,6 +59,7 @@ class BaseTest(APITestCase):
             meetup=self.meetup,
             created_by=self.user
         )
+        self.question.save()
 
     def is_authenticated(self):
         """Authenticate user before posting data
@@ -72,13 +75,14 @@ class BaseTest(APITestCase):
         url = reverse('question', args=[meetup_id])
         response = self.client.post(
             url,
-            data = json.dumps({
+            data=json.dumps({
                 "title": "Why are we testing views",
                 "body": "We test models cause we also want to know if the are working"
             }),
             content_type="application/json"
         )
         return response
+
     def post_without_title(self):
         """
         Post question without a title
@@ -110,6 +114,7 @@ class BaseTest(APITestCase):
             content_type="application/json"
         )
         return response
+
     def post_with_invalid_meetup(self):
         """
         Post question to invalid meetup
@@ -134,9 +139,146 @@ class BaseTest(APITestCase):
         url = reverse('question', args=[meetup_id])
         response = self.client.post(
             url,
-            data = json.dumps({
+            data=json.dumps({
                 "title": "!@#$%^&*()(*&^%",
                 "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_question(self):
+        """
+        update question 
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "test for edit question",
+                "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_invalid_question_id(self):
+        """
+        update invalid question
+        """
+        question_id = "9e70203d-8fc7-47c2-aacd-e140e65a67e"
+        meetup_id = str(self.meetup.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "test for edit question with invalid id",
+                "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+
+        return response
+    def update_invalid_meetup_id(self):
+        """
+        update invalid question with invalid meetup id
+        """
+        question_id = str(self.question.id)
+        meetup_id = "4e7769b1-ba3-48a3-aeb8-fef0b053d7bf"
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "test for edit question with invalid id",
+                "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+
+        return response
+
+    def update_without_title(self):
+        """
+        update question without a title
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "",
+                "body": "thr above is title is emptry"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_without_body(self):
+        """
+        update question without a body
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "yhe body below is empty",
+                "body": ""
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_without_changing_contents(self):
+        """
+        update question without changing the body contents
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "Why are we testing models",
+                "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_with_invalid_title(self):
+        """
+        update question without changing the body contents
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "&&&&&&",
+                "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_with_invalid_body(self):
+        """
+        update question without changing the body contents
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "tis tile is valid",
+                "body": "&&&&&&&&&&&&&&&&&&&"
             }),
             content_type="application/json"
         )
@@ -194,7 +336,7 @@ class BaseTest(APITestCase):
             content_type="application/json"
         )
         return response
-    
+
     def delete_with_invalid_meetup(self):
         """
         Delete an invalid meetup

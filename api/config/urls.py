@@ -27,7 +27,7 @@ from django.conf.urls.static import static
 from auth.views import AuthApiListView
 from utils.router import DefaultRouterWithAPIViews
 
-from .swagger import schema_view_swagger 
+from .swagger import schema_view_swagger
 
 admin.site.site_header = settings.ADMIN_SITE_HEADER
 
@@ -52,8 +52,8 @@ urlpatterns = [
     path('api/', doc_urls),
     path('api/auth/', auth_urls),
     path('api/', meetup_urls),
-    path('api/meetups/', answer_urls),
     path('api/meetups/', question_urls),
+    path('api/meetups/', answer_urls),
     path('api/schema/', schema_view),
     path('api/schema/swagger/', schema_view_swagger),
     path('api/browser/', api_browser_urls),
