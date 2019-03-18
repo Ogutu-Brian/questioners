@@ -36,14 +36,14 @@ class BaseTest(APITestCase):
             location='Andela Campus',
             creator=self.admin,
             scheduled_date=timezone.now()+timezone.timedelta(days=3)
-            )
+        )
         Meetup.objects.create(
             title='Test Driven',
             body='Developers need to discusss the correct approach of doing',
             location='Andela Campus',
             creator=self.admin,
             scheduled_date=timezone.now()+timezone.timedelta(days=2)
-            )
+        )
 
         self.meetup = Meetup.objects.all()[0]
         self.id = str(self.meetup.id)
@@ -61,29 +61,29 @@ class BaseTest(APITestCase):
         self.invalid_location = {
             'location': '@#$%^&*'
         }
-        self.update_meetup_url = '/api/update/'
-        self.unexisting_meetup_url = '/api/update/233dtui666798htr567'
+        self.update_meetup_url = '/api/meetups/'
+        self.unexisting_meetup_url = '/api/meetups/233dtui666798htr567/'
 
     def test_admin_successful_update(self):
         token, created = Token.objects.get_or_create(user=self.admin)
         self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         response = self.client.put(
-            path=self.update_meetup_url+self.id,
+            path=self.update_meetup_url+self.id+'/',
             data=self.update_data,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
     def test_normal_user_unsuccessful_update(self):
         token, created = Token.objects.get_or_create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         response = self.client.put(
-            path=self.update_meetup_url+self.id,
+            path=self.update_meetup_url+self.id+'/',
             data=self.update_data,
             format='json'
         )
-        self.assertEqual(response.data['Error'], 'Only an admin user can update a meetup')
+        self.assertEqual(response.data['Error'],
+                         'Only an admin user can update a meetup')
 
     def test_update_a_non_existence_meetup(self):
         token, created = Token.objects.get_or_create(user=self.admin)
@@ -93,41 +93,39 @@ class BaseTest(APITestCase):
             data=self.update_data,
             format='json'
         )
-        self.assertEqual(response.data[0]['Error'], 'The specified meetup does not exist')
+        self.assertEqual(response.data[0]['Error'],
+                         'The specified meetup does not exist')
 
     def test_invalid_title_update(self):
         token, created = Token.objects.get_or_create(user=self.admin)
         self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         response = self.client.put(
-            path=self.update_meetup_url+self.id,
+            path=self.update_meetup_url+self.id+'/',
             data=self.invalid_title,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data[0]['error'], '!@#$%^&* is not a valid meetup title')
+        self.assertEqual(response.data[0]['error'],
+                         '!@#$%^&* is not a valid meetup title')
 
     def test_invalid_location_update(self):
         token, created = Token.objects.get_or_create(user=self.admin)
         self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         response = self.client.put(
-            path=self.update_meetup_url+self.id,
+            path=self.update_meetup_url+self.id+'/',
             data=self.invalid_location,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data[0]['error'], '@#$%^&* is not a valid meetup location')
-        
+        self.assertEqual(response.data[0]['error'],
+                         '@#$%^&* is not a valid meetup location')
 
     def test_updating_same_existing_title(self):
         token, created = Token.objects.get_or_create(user=self.admin)
         self.client.credentials(HTTP_AUTHORIZATION='Token '+token.key)
         response = self.client.put(
-            path=self.update_meetup_url+self.id,
+            path=self.update_meetup_url+self.id+'/',
             data=self.duplicated_title,
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
-
-    
-
-
