@@ -41,9 +41,7 @@ doc_urls = include_docs_urls(title=settings.API_BROWSER_HEADER)
 api_browser_urls = include('rest_framework.urls')
 auth_urls = include('auth.urls')
 meetup_urls = include('meetups.urls')
-
-meetup_urls = include('meetups.urls')
-oauth2_urls = include('rest_framework_social_oauth2.urls')
+question_urls = include('questions.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
 
 urlpatterns = [
@@ -51,6 +49,7 @@ urlpatterns = [
     path('api/', doc_urls),
     path('api/auth/', auth_urls),
     path('api/', meetup_urls),
+    path('api/meetup/', question_urls),
     path('api/schema/', schema_view),
     path('api/schema/swagger/', schema_view_swagger),
     path('api/browser/', api_browser_urls),

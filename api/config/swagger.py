@@ -16,7 +16,7 @@ import coreapi
 def schema_view_swagger(request):
     schema = coreapi.Document(
         title='Questioner API',
-        url='https://questioners-two-staging.herokuapp.com/',
+        url='https://questioners-two-staging.herokuapp.com/',  # replace with your url
         content={
             'Users': {
                 'signup': coreapi.Link(
@@ -140,7 +140,7 @@ def schema_view_swagger(request):
                     ],
                     description='Request reset password'
                 ),
-                'confirm reset': coreapi.Link(
+                'confirm rest': coreapi.Link(
                     url='/api/auth/reset_password_confirm/',
                     action='POST',
                     fields=[
@@ -249,7 +249,7 @@ def schema_view_swagger(request):
                 'all meetups': coreapi.Link(
                     url='/api/meetups/?page={pageNumber}',
                     action='GET',
-                    fields =[
+                    fields=[
                         coreapi.Field(
                             name='pageNumber',
                             required=True,
@@ -273,7 +273,7 @@ def schema_view_swagger(request):
                 'upcoming meetups': coreapi.Link(
                     url='/api/meetups/upcoming/?page={pageNumber}',
                     action='GET',
-                    fields =[
+                    fields=[
                         coreapi.Field(
                             name='pageNumber',
                             required=True,
@@ -317,54 +317,82 @@ def schema_view_swagger(request):
             },
             'Meetups':{
                 'update': coreapi.Link(
-                    url= '/api/update/{id}',
-                    action= 'PUT',
-                    fields= [
+                    url='/api/update/{id}',
+                    action='PUT',
+                    fields=[
                         coreapi.Field(
-                            name = 'id',
-                            required = True,
-                            location = 'path',
-                            description = 'The meetup id'
+                            name='id',
+                            required=True,
+                            location='path',
+                            description='The meetup id'
                         ),
                         coreapi.Field(
-                            name = 'title',
-                            required = False,
-                            location = 'form',
-                            description = 'A title for the meetup'
+                            name='title',
+                            required=False,
+                            location='form',
+                            description='A title for the meetup'
                         ),
                         coreapi.Field(
-                            name = 'body',
-                            required = False,
-                            location = 'form',
-                            description = 'The body of the meetup'
+                            name='body',
+                            required=False,
+                            location='form',
+                            description='The body of the meetup'
                         ),
                         coreapi.Field(
-                            name = 'location',
-                            required = False,
-                            location = 'form',
-                            description = 'Where the meetup will be held'
+                            name='location',
+                            required=False,
+                            location='form',
+                            description='Where the meetup will be held'
                         ),
                         coreapi.Field(
-                            name = 'scheduled_date',
-                            required = False,
-                            location = 'form',
-                            description = 'When the meetup will be held. Must be valid date and time'
+                            name='scheduled_date',
+                            required=False,
+                            location='form',
+                            description='When the meetup will be held. Must be valid date and time'
                         ),
                         coreapi.Field(
-                            name = 'tags',
-                            required = False,
-                            location = 'form',
-                            description = 'Meetup tags'
+                            name='tags',
+                            required=False,
+                            location='form',
+                            description='Meetup tags'
                         ),
                         coreapi.Field(
-                            name = 'images',
-                            required = False,
-                            location = 'form',
-                            description = 'Meetup image urls'
+                            name='images',
+                            required=False,
+                            location='form',
+                            description='Meetup image urls'
                         )
                     ],
-                    description = 'Updating a meetup'   
+                    description='Updating a meetup'
                 )
+            },
+            'Questions': {
+                'Post question': coreapi.Link(
+                    # fetch meetup id from the database
+                    url='/api/meetup/{meetup_id}/question/',
+                    action='POST',
+                    fields=[
+                        coreapi.Field(
+                            name='meetup_id',
+                            required=True,
+                            location='path',
+                            description='Id of the specific meetup id'
+                        ),
+                        coreapi.Field(
+                            name='title',
+                            required=True,
+                            location='form',
+                            description='The title of the question being asked'
+                        ),
+                        coreapi.Field(
+                            name='body',
+                            required=True,
+                            location='form',
+                            description='The description of the question beng asked'
+                        )
+                    ],
+                    description='Posting a question to a specific meetup endpoint'
+                ),
             }
             
         }
