@@ -16,7 +16,7 @@ import coreapi
 def schema_view_swagger(request):
     schema = coreapi.Document(
         title='Questioner API',
-        url='https://questioners-two-staging.herokuapp.com/',  # replace with your url
+        url='https://questioners-two-staging.herokuapp.com/',
         content={
             'Users': {
                 'signup': coreapi.Link(
@@ -281,6 +281,26 @@ def schema_view_swagger(request):
                         )
                     ],
                     description='View upcoming meetups'
+                ),
+                'Rsvp meetup': coreapi.Link(
+                    url='/api/{meetupid}/rsvp',
+                    action='POST',
+                    description='Rsvp a specific meetup',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupid',
+                            required=True,
+                            location='path',
+                            description='Specific Meetup id'
+                        ),
+                    
+                        coreapi.Field(
+                            name='response',
+                            required=True,
+                            location='form',
+                            description='Response is either Yes, No or Maybe'
+                        )
+                    ]
                 )
             },
             'Meetups':{

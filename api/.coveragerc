@@ -6,4 +6,6 @@ omit = *migrations*
     */home/travis/virtualenv*
     */tests*
     */manage*
-    swagger.py
+    */swagger*
+    */apps*
+    */wsgi*

@@ -10,7 +10,7 @@ from .views import (SignUpView, ResendActivationView, ActivationView,
 urlpatterns = [     
      path('signup/', SignUpView.as_view(), name='user_signup'),
      path('resend/', ResendActivationView.as_view(), name='user_resend'),
-     path('activate/', ActivationView.as_view(), name='user_activate'),
+    path('activate/', ActivationView.as_view(), name='user_activate'),
      path('login/', ObtainJSONWebToken.as_view(), name='user_login'),
      path('logout/', LogoutView.as_view(), name='user_logout'),
      path('change_password/', ChangePasswordView.as_view(),

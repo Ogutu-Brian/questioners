@@ -86,11 +86,16 @@ class SocialSigUpView(APIView):
     """
     
     permission_classes = [permissions.AllowAny]
+    serializer_class = serializers.SocialAuthSerializer
 
     def post(self, request):
-        auth = get_authorization_header(request).split()
+        """
+        User sign up with Google
+        """
         not_active = True
-        token = auth[1]
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.data.get("id_token")
         try:
             idinfo = id_token.verify_oauth2_token(
                 token, requests.Request(), '407408718192.apps.googleusercontent.com')

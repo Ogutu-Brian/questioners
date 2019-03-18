@@ -1,7 +1,8 @@
-from django.db import models
-from users.models import User
 import uuid
 import datetime
+from django.db import models
+from users.models import User
+
 """
 Models for the meetups
 """
@@ -68,4 +69,25 @@ class Meetup(models.Model):
                            ('title', 'scheduled_date', 'location'))
 
     def __str__(self):
-        return self.title + " on "+self.scheduled_date.strftime('%m-%d-%Y')
+        return self.title + " on " + self.scheduled_date.strftime('%m-%d-%Y')
+
+
+class Rsvp(models.Model):
+    """
+    Rsvp class to pick user response to a meetup
+    """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False)
+    created_on = models.DateTimeField(
+        auto_now_add=True)
+    updated_on = models.DateTimeField(
+        auto_now=True)
+    responder = models.ForeignKey(
+        User, on_delete=models.CASCADE)
+    meetup = models.ForeignKey(
+        Meetup, on_delete=models.CASCADE)
+    response = models.CharField(
+        max_length=5)
+
+    def __str__(self):
+        return self.response

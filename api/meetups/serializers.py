@@ -1,6 +1,14 @@
-from rest_framework import serializers
-from .models import Meetup, Tag
+from .models import Meetup, Tag, Rsvp
+from djoser import utils
 from django.utils import timezone
+from .models import Meetup, Tag
+from django.contrib.auth import authenticate, get_user_model
+from django.utils.translation import ugettext_lazy as _
+
+
+from rest_framework import serializers
+
+User = get_user_model()
 
 
 class MeetupSerializer(serializers.ModelSerializer):
@@ -53,3 +61,27 @@ class UpdateMeetupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meetup
         fields = '__all__'
+
+
+class RsvpSerializer(serializers.ModelSerializer):
+    """
+    Serializers for rsvp
+    """
+    response = serializers.CharField()
+
+    def validate_response(self, value):
+        """
+        Validate User response
+        """
+
+        if "yes" not in value.lower():
+            if "no" not in value.lower():
+                if "maybe" not in value.lower():
+                    raise serializers.ValidationError(
+                        "RSVP, can only take Yes, No or Maybe")
+        return value
+
+    class Meta:
+        model = Rsvp
+        fields = ("id", "response", "created_on", "updated_on")
+        read_only_fields = ("id", "created_on", "updated_on")
