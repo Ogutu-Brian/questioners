@@ -5,6 +5,8 @@ from django.shortcuts import render, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.db.utils import DataError
 
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.shortcuts import render
 from rest_framework.views import APIView, Response
 from .models import Meetup, Tag, Image
 from .serializers import MeetupSerializer, TagSerializer, UpdateMeetupSerializer, FetchMeetupSerializer
@@ -103,6 +105,31 @@ class MeetupViews(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         return response
+
+    def delete(self, request, meetupid, format=None) -> Response:
+        """
+        Endpoint to deleting specific meetup
+        Delete /api/meetups/<meetupId>/
+        """
+        response = {}
+
+        try:
+            meetup = Meetup.objects.get(id=meetupid)
+            meetup.delete()
+            response = {
+                "message": "succefully deleted",
+                "status": status.HTTP_204_NO_CONTENT
+            }
+        except (ObjectDoesNotExist, ValidationError) as e:
+            response = {
+                'error': str(e),
+                'status': status.HTTP_404_NOT_FOUND,
+            }
+
+        return Response(
+            data=response,
+            status=response.get('status')
+        )
 
 
 class GetAllMeetups(APIView):

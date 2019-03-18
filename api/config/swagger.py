@@ -301,7 +301,19 @@ def schema_view_swagger(request):
                             description='Response is either Yes, No or Maybe'
                         )
                     ]
-                )
+                ),
+                'Delete meetups': coreapi.Link(
+                    url='/api/meetups/{meetupid}/',
+                    action='DELETE',
+                    description='Delete a specific meetup',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupid',
+                            required=True,
+                            location='path'
+                        )
+                    ]
+                )    
             },
             'Meetups':{
                 'update': coreapi.Link(
@@ -354,6 +366,7 @@ def schema_view_swagger(request):
                     description = 'Updating a meetup'   
                 )
             }
+            
         }
     )
     return response.Response(schema)
