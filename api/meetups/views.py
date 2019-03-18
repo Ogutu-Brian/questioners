@@ -116,7 +116,7 @@ class GetAllMeetups(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
         else:
             paginator = PageNumberPagination()
-            paginator.page_size = 1
+            paginator.page_size = 5
             result_page = paginator.paginate_queryset(meetups, request)
             serializer = FetchMeetupSerializer(result_page, many=True)
             response = paginator.get_paginated_response(serializer.data)
@@ -168,7 +168,7 @@ class GetUpcomingMeetups(APIView):
             scheduled_date__gte=timezone.now())
         if upcoming_meetups:
             paginator = PageNumberPagination()
-            paginator.page_size = 1
+            paginator.page_size = 5
             result_page = paginator.paginate_queryset(
                 upcoming_meetups, request)
             serializer = FetchMeetupSerializer(result_page, many=True)

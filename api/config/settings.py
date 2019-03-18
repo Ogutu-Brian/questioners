@@ -51,9 +51,9 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    "0.0.0.0", 
+    "0.0.0.0",
     "localhost"
-    ]
+]
 USE_X_FORWARDED_HOST = env.bool('DJANGO_USE_X_FORWARDED_HOST', default=True)
 
 # Django Installed Apps
@@ -115,8 +115,8 @@ REST_FRAMEWORK = {
         'user': env.str(
             'DJANGO_DEFAULT_THROTTLE_RATE_USER', default='120/minute'),
     },
-    'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE':env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': env.int('DJANGO_DEFAULT_PAGE_SIZE', default=25),
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.SearchFilter',
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -514,7 +514,7 @@ if DJANGO_ENV == 'production':
         'DSN':
         SENTRY_DSN
     }
-    
+
 SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True,
     'USE_SESSION_AUTH': False,
