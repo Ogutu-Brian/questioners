@@ -5,7 +5,6 @@ from rest_framework.decorators import (renderer_classes, authentication_classes,
 from rest_framework import response
 from rest_framework.permissions import AllowAny
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-
 import coreapi
 
 
@@ -234,11 +233,13 @@ def schema_view_swagger(request):
                         coreapi.Field(
                             name='tags',
                             required=False,
+                            type='array',
                             location='form',
                             description='Descriptive tags of the meetup'
                         ),
                         coreapi.Field(
                             name='images',
+                            type='array',
                             required=False,
                             location='form',
                             description='Image URLs for the meetup'
@@ -249,6 +250,18 @@ def schema_view_swagger(request):
                 'all meetups': coreapi.Link(
                     url='/api/meetups/',
                     action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='page_limit',
+                            required=False,
+                            location='query',
+                        ),
+                        coreapi.Field(
+                            name='page',
+                            required=False,
+                            location='query'
+                        )
+                    ],
                     description='View all meetups'
                 ),
                 'specific meetup': coreapi.Link(
@@ -266,12 +279,106 @@ def schema_view_swagger(request):
                 'upcoming meetups': coreapi.Link(
                     url='/api/meetups/upcoming/',
                     action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='page_limit',
+                            required=False,
+                            location='query',
+                        ),
+                        coreapi.Field(
+                            name='page',
+                            required=False,
+                            location='query'
+                        )
+                    ],
                     description='View upcoming meetups'
+                ),
+                'Rsvp meetup': coreapi.Link(
+                    url='/api/{meetupid}/rsvp',
+                    action='POST',
+                    description='Rsvp a specific meetup',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupid',
+                            required=True,
+                            location='path',
+                            description='Specific Meetup id'
+                        ),
+
+                        coreapi.Field(
+                            name='response',
+                            required=True,
+                            location='form',
+                            description='Response is either Yes, No or Maybe'
+                        )
+                    ]
+                ),
+                'Delete meetups': coreapi.Link(
+                    url='/api/meetups/{meetupid}/',
+                    action='DELETE',
+                    description='Delete a specific meetup',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupid',
+                            required=True,
+                            location='path'
+                        )
+                    ]
+                ),
+                'update': coreapi.Link(
+                    url='/api/update/{id}',
+                    action='PUT',
+                    fields=[
+                        coreapi.Field(
+                            name='id',
+                            required=True,
+                            location='path',
+                            description='The meetup id'
+                        ),
+                        coreapi.Field(
+                            name='title',
+                            required=False,
+                            location='form',
+                            description='A title for the meetup'
+                        ),
+                        coreapi.Field(
+                            name='body',
+                            required=False,
+                            location='form',
+                            description='The body of the meetup'
+                        ),
+                        coreapi.Field(
+                            name='location',
+                            required=False,
+                            location='form',
+                            description='Where the meetup will be held'
+                        ),
+                        coreapi.Field(
+                            name='scheduled_date',
+                            required=False,
+                            location='form',
+                            description='When the meetup will be held. Must be valid date and time'
+                        ),
+                        coreapi.Field(
+                            name='tags',
+                            required=False,
+                            location='form',
+                            description='Meetup tags'
+                        ),
+                        coreapi.Field(
+                            name='images',
+                            required=False,
+                            location='form',
+                            description='Meetup image urls'
+                        )
+                    ],
+                    description='Updating a meetup'
                 )
             },
             'Questions': {
                 'Post question': coreapi.Link(
-                    url='/api/meetup/{meetup_id}/question/', # fetch meetup id from the database
+                    # fetch meetup id from the database
+                    url='/api/meetup/{meetup_id}/question/',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -295,8 +402,21 @@ def schema_view_swagger(request):
                     ],
                     description='Posting a question to a specific meetup endpoint'
                 ),
+                'view question on meetups': coreapi.Link(
+                    url='/api/meetup/{meetupId}/questions/',
+                    action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the meetup'
+                        )
+                    ],
+                    description='Fetching questions on a specific meetup'
+                ),
             }
-            
+
         }
     )
     return response.Response(schema)

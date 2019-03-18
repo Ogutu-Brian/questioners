@@ -7,6 +7,11 @@ import django
 from meetups.models import Meetup
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
+from django.test import TestCase
+from rest_framework.test import APIClient
+import json
+from users.models import User
+from rest_framework.reverse import reverse
 
 
 class TestMeetupModel(TestSetUp):
@@ -276,3 +281,104 @@ class TestViewMeetups(TestSetUp):
         )
         response = self.get_upcoming_meetups()
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def tes_page_limit_upcomint_meetups(self) -> None:
+        """
+        Tests page limiting in upcoming meetups
+        """
+        self.upcoming_meetups_url = self.upcoming_meetups_url+'?page_limit=5'
+        response = self.get_upcoming_meetups()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pagination_all_meetups(self):
+        """
+        Tests page limiting in all meetups
+        """
+        self.all_meetups_url = self.all_meetups_url+'?page_limit=1'
+        response = self.get_all_meetups()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TestRsvpModel(TestCase):
+    """
+    Test for the Rsvp model
+    """
+
+    def setUp(self):
+        """
+        Setting up
+        """
+        self.client = APIClient()
+        self.user = User.objects._create_user(
+            name="Escobar Miguel",
+            email="admin@questioner.com",
+            password="@Escobar123"
+        )
+        self.user.is_active = True
+        self.user.save()
+
+        self.admin = User.objects._create_user(
+            name="Admin User",
+            email="admin@help.com",
+            password="@Admin123"
+        )
+        self.user.is_active = True
+        self.is_admin = True
+        self.user.save()
+
+        self.meetup = Meetup.objects.create(
+            title='Test Driven Development',
+            body='Developers need to discusss the correct approach of doing test driven development',
+            location='Andela Campus',
+            creator=self.admin,
+            scheduled_date=timezone.now() + timezone.timedelta(days=3)
+        )
+        self.meetup.save()
+
+    def login_user(self, email="admin@questioner.com", password="@Escobar123"):
+        """
+        Login in a user to get the token
+        """
+        url = reverse("user_login")
+        data = self.client.post(
+            url,
+            data=json.dumps({
+                "email": email,
+                "password": password
+            }),
+            content_type="application/json"
+        )
+        res = data.data['token']
+
+        return res
+
+    def test_post_rsvp(self):
+        """
+        Post rsvp specific to a meetup
+        """
+        meetup_id = str(self.meetup.id)
+        url = reverse('rsvp', args=[meetup_id])
+        response = self.client.post(
+            url,
+            data=json.dumps({
+                "response": "Yes"
+            }),
+            content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_rsvp_without_response(self):
+        """
+        Post rsvp specific to a meetup with no response
+        """
+        meetup_id = str(self.meetup.id)
+        url = reverse('rsvp', args=[meetup_id])
+        res = self.client.post(
+            url,
+            data=json.dumps({
+                "response": ""
+            }),
+            content_type="application/json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
