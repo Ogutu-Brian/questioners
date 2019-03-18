@@ -42,6 +42,9 @@ api_browser_urls = include('rest_framework.urls')
 auth_urls = include('auth.urls')
 meetup_urls = include('meetups.urls')
 question_urls = include('questions.urls')
+
+meetup_urls = include('meetups.urls')
+answer_urls = include('answers.urls')
 oauth2_urls = include('rest_framework_social_oauth2.urls')
 
 urlpatterns = [
@@ -50,6 +53,7 @@ urlpatterns = [
     path('api/auth/', auth_urls),
     path('api/', meetup_urls),
     path('api/meetup/', question_urls),
+    path('api/meetups/', answer_urls),
     path('api/schema/', schema_view),
     path('api/schema/swagger/', schema_view_swagger),
     path('api/browser/', api_browser_urls),

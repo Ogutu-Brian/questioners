@@ -20,6 +20,6 @@ urlpatterns = [
           name='reset_password'),
      path('reset_password_confirm/', PasswordResetConfirmView.as_view(),
           name='reset_password_confirm'),
-     path('google_oauth2/', SocialAuthView.as_view(), name='social'),
-     path('social/signup', SocialSigUpView.as_view(), name='social_signup')
+     path('google/login', SocialAuthView.as_view(), name='google_login'),
+     path('google/signup', SocialSigUpView.as_view(), name='google_signup')
 ]

@@ -82,7 +82,7 @@ def schema_view_swagger(request):
                     description='Resend account activation email'
                 ),
                 'social signup': coreapi.Link(
-                    url='/api/auth/social/signup',
+                    url='/api/auth/google/signup',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -114,7 +114,7 @@ def schema_view_swagger(request):
                     description='Using basic authentication to login'
                 ),
                 'google auth': coreapi.Link(
-                    url='/api/auth/google_oauth2/',
+                    url='/api/auth/google/login',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -324,7 +324,9 @@ def schema_view_swagger(request):
                             location='path'
                         )
                     ]
-                ),
+                )
+            },
+            'Meetups': {
                 'update': coreapi.Link(
                     url='/api/update/{id}',
                     action='PUT',
@@ -401,6 +403,33 @@ def schema_view_swagger(request):
                         )
                     ],
                     description='Posting a question to a specific meetup endpoint'
+                )
+            },
+            'Answers': {
+                'new answer': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{id}/answer/',
+                    action='POST',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the specific meetup id'
+                        ),
+                        coreapi.Field(
+                            name='id',
+                            required=True,
+                            location='path',
+                            description='Id of the specific question id'
+                        ),
+                        coreapi.Field(
+                            name='body',
+                            required=True,
+                            location='form',
+                            description='A description of the answer'
+                        ),
+                    ],
+                    description='Create a new Answer'
                 ),
                 'view question on meetups': coreapi.Link(
                     url='/api/meetup/{meetupId}/questions/',
@@ -414,6 +443,37 @@ def schema_view_swagger(request):
                         )
                     ],
                     description='Fetching questions on a specific meetup'
+                ),
+                'update existing answer': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}',
+                    action='PUT',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='A specific meetup id of an existing meetup'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='A specific question id of an existing question'
+                        ),
+                        coreapi.Field(
+                            name='answerId',
+                            required=True,
+                            location='path',
+                            description='A specific answer id of an existing answer'
+                        ),
+                        coreapi.Field(
+                            name='body',
+                            required=True,
+                            location='form',
+                            description='A new description of the answer'
+                        )
+                    ],
+                    description = 'Update an existing answer'
                 ),
             }
 

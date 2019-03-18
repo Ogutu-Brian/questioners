@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'users',
     'meetups',
     'questions',
+    'answers',
     'djoser',
     'mail_templated',
     'utils',
