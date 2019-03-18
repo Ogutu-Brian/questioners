@@ -6,7 +6,6 @@ import re
 from rest_framework.request import Request
 from typing import Tuple
 
-
 def valid_string(input_string: str) -> bool:
     """
     Checks if the input string contains valid characters for fields
@@ -57,3 +56,4 @@ def valid_meetup(request: Request) -> Tuple:
                 })
                 break
     return is_valid, errors
+
