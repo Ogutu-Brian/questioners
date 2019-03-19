@@ -380,7 +380,7 @@ def schema_view_swagger(request):
             'Questions': {
                 'Post question': coreapi.Link(
                     # fetch meetup id from the database
-                    url='/api/meetup/{meetup_id}/question/',
+                    url='/api/meetups/{meetup_id}/questions/',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -432,7 +432,7 @@ def schema_view_swagger(request):
                     description='Create a new Answer'
                 ),
                 'view question on meetups': coreapi.Link(
-                    url='/api/meetup/{meetupId}/questions/',
+                    url='/api/meetups/{meetupId}/questions',
                     action='GET',
                     fields=[
                         coreapi.Field(
@@ -440,7 +440,19 @@ def schema_view_swagger(request):
                             required=True,
                             location='path',
                             description='Id of the meetup'
-                        )
+                        ),
+                        coreapi.Field(
+                            name='page',
+                            required=False,
+                            location='query',
+                            description='page number'
+                        ),
+                        coreapi.Field(
+                            name='page_limit',
+                            required=False,
+                            location='query',
+                            description='The limit of data displayed per page'
+                        ),
                     ],
                     description='Fetching questions on a specific meetup'
                 ),

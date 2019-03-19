@@ -48,6 +48,7 @@ class QuestionViews(APIView):
                 "error": message
             }, status=status.HTTP_404_NOT_FOUND)
 
+
 class ViewQuestionsView(APIView):
     """
     A view for fetching questions specific to a meetup
@@ -60,13 +61,18 @@ class ViewQuestionsView(APIView):
         """
         questions = Question.objects.filter(meetup_id=id)
         if questions:
+            page_limit = request.GET.get('page_limit')
+            if not page_limit:
+                page_limit = 10
             pagination_class = PageNumberPagination()
-            pagination_class.page_size = 5
+            pagination_class.page_size = page_limit
             page = pagination_class.paginate_queryset(questions, request)
             serializer = ViewQuestionsSerializer(page, many=True)
             paginated_response = pagination_class.get_paginated_response(
                 serializer.data)
             return paginated_response
-        return Response({
-            "error": "There are no questions"
-        }, status=status.HTTP_404_NOT_FOUND)
+        else:
+            response = Response({
+                'error': 'There are no questions'
+            }, status=status.HTTP_404_NOT_FOUND)
+        return response

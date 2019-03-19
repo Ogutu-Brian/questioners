@@ -4,8 +4,8 @@ from django.utils import timezone
 from .models import Meetup, Tag
 from django.contrib.auth import authenticate, get_user_model
 from django.utils import timezone
-
-
+from users.models import User
+from users.serializers import FetchUserSerializer
 from rest_framework import serializers
 
 User = get_user_model()
@@ -45,6 +45,7 @@ class FetchMeetupSerializer(serializers.ModelSerializer):
     """
     tags = serializers.StringRelatedField(many=True)
     image_url = serializers.StringRelatedField(many=True)
+    creator = FetchUserSerializer()
 
     class Meta:
         model = Meetup
@@ -73,7 +74,6 @@ class RsvpSerializer(serializers.ModelSerializer):
         """
         Validate User response
         """
-
         if "yes" not in value.lower():
             if "no" not in value.lower():
                 if "maybe" not in value.lower():
@@ -84,6 +84,3 @@ class RsvpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rsvp
         fields = ("id", "response", "created_on", "updated_on")
-
-
-read_only_fields = ("id", "created_on", "updated_on")
