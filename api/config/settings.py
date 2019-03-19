@@ -524,7 +524,8 @@ SWAGGER_SETTINGS = {
           'in': 'header',
           'name': 'Authorization'
       }
-  }
+  },
+  'JSON_EDITOR': True
 }
 
 django_heroku.settings(locals())

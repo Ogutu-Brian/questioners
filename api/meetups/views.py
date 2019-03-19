@@ -9,17 +9,22 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render
 from rest_framework.views import APIView, Response
 from .models import Meetup, Tag, Image
-from .serializers import MeetupSerializer, TagSerializer, UpdateMeetupSerializer, FetchMeetupSerializer
+from .serializers import (
+    MeetupSerializer,
+    TagSerializer,
+    UpdateMeetupSerializer,
+    FetchMeetupSerializer,
+    RsvpSerializer
+)
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from utils.validators import valid_meetup
+from utils.validators import valid_string, valid_url, valid_meetup
 from rest_framework.request import Request
+from .models import Meetup, Tag, Image, Rsvp
 from typing import Tuple
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
-import json
-
 
 class MeetupViews(APIView):
     """
@@ -137,6 +142,9 @@ class GetAllMeetups(APIView):
         A GET endpoint for getting all meetups in the database
         GET /api/meetups/
         """
+        page_limit = request.GET.get('page_limit')
+        if not page_limit or not page_limit.isdigit():
+            page_limit = 10
         meetups = Meetup.objects.all()
         response = None
         if not meetups:
@@ -146,7 +154,7 @@ class GetAllMeetups(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
         else:
             paginator = PageNumberPagination()
-            paginator.page_size = 1
+            paginator.page_size = page_limit
             result_page = paginator.paginate_queryset(meetups, request)
             serializer = FetchMeetupSerializer(result_page, many=True)
             response = paginator.get_paginated_response(serializer.data)
@@ -189,16 +197,19 @@ class GetUpcomingMeetups(APIView):
     """
     permission_classes = [permissions.AllowAny]
 
-    def get(self, request: Request):
+    def get(self, request: Request) -> Response:
         """
         Gets upcoming meetups
         GET /api/meetups/upcoming/
         """
+        page_limit = request.GET.get('page_limit')
+        if not page_limit or not page_limit.isdigit():
+            page_limit = 10
         upcoming_meetups = Meetup.objects.filter(
             scheduled_date__gte=timezone.now())
         if upcoming_meetups:
             paginator = PageNumberPagination()
-            paginator.page_size = 1
+            paginator.page_size = page_limit
             result_page = paginator.paginate_queryset(
                 upcoming_meetups, request)
             serializer = FetchMeetupSerializer(result_page, many=True)
@@ -234,7 +245,7 @@ class UpdateMeetup(APIView):
             })
 
             is_valid_meetup = False
-    
+
         if is_valid_meetup:
             request.data['creator'] = request.user
             tags = request.data.get('tags')
@@ -275,7 +286,12 @@ class UpdateMeetup(APIView):
                 if data.get('title'):
                     qs = qs.exclude(pk=meetup.id)
                     if qs.exists():
-                        return Response(data={'Error': 'That title is already taken'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response(
+                            data={
+                                'Error': 'That title is already taken'
+                            },
+                            status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
                     meetup.title = data.get('title')
                 if data.get('location'):
                     meetup.location = data.get('location')
@@ -303,7 +319,8 @@ class UpdateMeetup(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         return response
-    
+
+
 class RsvpView(APIView):
     """
     We can see all the response from users
@@ -342,10 +359,10 @@ class RspvPostView(APIView):
             if serializer.is_valid():
                 Rsvp.objects.update_or_create(
 
-                    meetup = get_object_or_404(queryset, id=id),
-                    responder = request.data.get('responder'),
+                    meetup=get_object_or_404(queryset, id=id),
+                    responder=request.data.get('responder'),
                     defaults={
-                        'response' : request.data.get('response'),
+                        'response': request.data.get('response'),
                         'meetup': get_object_or_404(queryset, id=id),
                         'responder': request.data.get('responder')
                     }
