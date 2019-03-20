@@ -9,3 +9,7 @@ omit = *migrations*
     */swagger*
     */apps*
     */wsgi*
+    */admin*
+    */users/views*
+    */config/wsgi*
+    */auth/serializers*
