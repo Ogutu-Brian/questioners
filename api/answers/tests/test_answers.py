@@ -31,7 +31,7 @@ class PostAnswerTest(BaseTest):
 
     def test_successful_get_an_answer(self):
         """
-        Test 200 answer created
+        Test 200 get answer
         """
         self.is_authenticated(self.user1)
         response = self.get_answer()

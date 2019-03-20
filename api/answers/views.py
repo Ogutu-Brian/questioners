@@ -1,20 +1,25 @@
 """
 Views operations for the answers
 """
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError ,ObjectDoesNotExist
+from django.shortcuts import get_object_or_404, _get_queryset
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from rest_framework.views import APIView, Response
 from rest_framework.request import Request
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import permission_classes, api_view
+from rest_framework.pagination import PageNumberPagination
 
-from .models import Answer
+from .models import Answer, AnswerVote
 from questions.models import Question
 from meetups.models import Meetup
-from .serializers import AnswerSerializer, GetAnswerSerializer
+from .serializers import AnswerSerializer, GetAnswerSerializer, VoteSerializer
 from utils.validators import valid_string
+from users.serializers import FetchUserSerializer
+
+
+# Create your views here.
 
 
 class AnswersPostView(APIView):
@@ -92,26 +97,39 @@ class GetAnswerView(APIView):
 
     def get(self, request, meetupId, questionId):
         """
-        Get all available RSVP
+        Get all available answers
         """
         try:
             Meetup.objects.get(id=meetupId)
             try:
-                Question.objects.filter(id=questionId, meetup=meetupId)
-                response = Answer.objects.all()
-                serializer = GetAnswerSerializer(response, many=True)
-                return Response(
-                    {"Answers": serializer.data}
-                )
-            except ValidationError:
+                question = Question.objects.filter(id=questionId, meetup=meetupId)
+                if question:
+                    answer = Answer.objects.filter(question=questionId)
+                    if answer:
+                        page_limit = request.GET.get('page_limit')
+                        if not page_limit:
+                            page_limit = 10
+                        pagination_class = PageNumberPagination()
+                        pagination_class.page_size = page_limit
+                        page = pagination_class.paginate_queryset(answer, request)
+                        serializer = GetAnswerSerializer(page, many=True)
+                        paginated_response = pagination_class.get_paginated_response(serializer.data)
+                        return paginated_response
+                    return Response(
+                        {
+                            'error': 'There are no answers in given question'
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            except:
                 return Response(
                     {
-                        'error': 'Question does not exist'
+                        'error': 'Question does not exist in given meetup'
                     },
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-        except ValidationError:
+        except:
             return Response(
                 {
                     'error': 'Meetup does not exist'
@@ -220,3 +238,117 @@ class DeleteAnswer(APIView):
         except (ObjectDoesNotExist, ValidationError) as e:
             error = {'error': str(e)}
             return Response(data=error, status=status.HTTP_404_NOT_FOUND)
+
+
+class UpvoteAnswer(APIView):
+    """
+    View for upvoting answer
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, meetupId, questionId, answerId):
+        """
+        Upvote an answer
+        """
+        message = "Answer Upvoted successfully!"
+        vote_choice = "upvote"
+        upvoting = user_vote(request, meetupId, questionId, answerId, vote_choice, message)
+        return upvoting
+
+
+class DownvoteAnswer(APIView):
+    """
+    View for downvoting answer
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, meetupId, questionId, answerId):
+        """
+        Downvote an answer
+        """
+        message = "Answer Downvoted successfully!"
+        vote_choice = "downvote"
+        downvoting = user_vote(request, meetupId, questionId, answerId, vote_choice, message)
+        return downvoting
+
+
+def user_vote(request, meetupId, questionId, answerId, vote_choice, message):
+        """
+        vote for an answer
+        """
+        try:
+            meetup = Meetup.objects.get(id=meetupId)
+            try:
+                question = Question.objects.filter(id=questionId, meetup=meetupId)
+                if not question:
+                    return Response(
+                        data={
+                            "error": "Question not in given meetup"
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                try:
+                    answer = Answer.objects.filter(id=answerId, question=questionId)
+                    if answer:
+                        user = request.user
+                        vote = AnswerVote.objects.filter(answer=answerId, creator=user,
+                                                         vote_type=vote_choice)
+                        if vote:
+                            return Response(
+                                data={
+                                    "error": "You cannot {} an answer more than once".format(vote_choice)
+                                },
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        userVote, created = AnswerVote.objects.update_or_create(
+                            creator=user,
+                            answer=Answer.objects.get(id=answerId),
+                            defaults={
+                                "vote_type": vote_choice
+                            }
+                        )
+                        upvotes = AnswerVote.objects.filter(answer=answerId,
+                                                            vote_type='upvote').count()
+                        downvotes = AnswerVote.objects.filter(answer=answerId,
+                                                              vote_type='downvote').count()
+                        total = upvotes-downvotes
+                        voter = FetchUserSerializer(userVote.creator.__dict__, many=False).data
+                        return Response(
+                                data={
+                                    "user": voter,
+                                    "answer": userVote.answer.body,
+                                    "vote_type": userVote.vote_type,
+                                    "upvotes": upvotes,
+                                    "downvotes": downvotes,
+                                    "vote_score": total,
+                                    "message": message
+                                },
+                                status=status.HTTP_201_CREATED
+                            )
+                    return Response(
+                            data={
+                                "error": "Answer not in given question"
+                            },
+                            status=status.HTTP_404_NOT_FOUND
+                        )
+                except:
+                    return Response(
+                        data={
+                            "error": "Answer does not exist"
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            except:
+                return Response(
+                    data={
+                        "error": "Question does not exist"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        except:
+            return Response(
+                data={
+                    "error": "Meetup does not exist"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )

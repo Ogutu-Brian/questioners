@@ -83,7 +83,6 @@ class BaseTest(APITestCase):
         )
         self.question3.save()
 
-
     def is_authenticated(self, user):
         """
         Authenticate a user and get the token
@@ -112,14 +111,11 @@ class BaseTest(APITestCase):
         """
         Get an answer to a specific question
         """
+        self.post_answer()
         meetup_id = str(self.meetup.id)
         question_id = str(self.question1.id)
         url = reverse('Get_all_answers', args=[meetup_id, question_id])
-
-        response = self.client.get(
-            url,
-            content_type="application/json"
-        )
+        response = self.client.get(url)
         return response
 
     def post_answer_with_special_character(self):

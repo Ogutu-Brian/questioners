@@ -30,4 +30,20 @@ class Migration(migrations.Migration):
                 'ordering': ['-date_created_on'],
             },
         ),
+        migrations.CreateModel(
+            name='AnswerVote',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_on', models.DateTimeField(auto_now_add=True)),
+                ('updated_on', models.DateTimeField(auto_now=True)),
+                ('votes', models.IntegerField(default=0)),
+                ('vote_type', models.TextField(default='none')),
+                ('answer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='answers.Answer')),
+                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.AlterUniqueTogether(
+            name='answervote',
+            unique_together={('creator', 'answer', 'vote_type')},
+        ),
     ]
