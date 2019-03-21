@@ -8,8 +8,8 @@ omit = *migrations*
     */manage*
     */swagger*
     */apps*
-    */wsgi*
     */admin*
     */users/views*
     */config/wsgi*
     */auth/serializers*
+    */utils/router.py*

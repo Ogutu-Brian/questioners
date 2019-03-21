@@ -30,7 +30,7 @@
   ```
    /api/auth/resend/
  ```
- - User Password Reset Eamil
+ - User Password Reset using mail
   ```
    /api/auth/reset_password/
  ```
@@ -56,7 +56,11 @@
  ```
   /api/schema/
  ```
-
+## Questions Endpoints
+- User updates questions
+ ```
+  /api/meetups/{meetup_id}/questions/{question_id}/
+ ```
 ## Local Development Setup
  - First Create python virtual env
  ```

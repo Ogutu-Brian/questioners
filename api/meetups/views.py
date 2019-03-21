@@ -18,7 +18,7 @@ from .serializers import (
 )
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from utils.validators import valid_string, valid_url, valid_meetup
+from utils.validators import valid_meetup
 from rest_framework.request import Request
 from .models import Meetup, Tag, Image, Rsvp
 from typing import Tuple

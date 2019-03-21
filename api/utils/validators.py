@@ -56,3 +56,23 @@ def valid_meetup(request: Request) -> Tuple:
                 })
                 break
     return is_valid, errors
+
+
+def valid_question(request: Request) -> Tuple:
+    """
+    Validates questions data that is not handled by django
+    """
+    data = request.data
+    errors = []
+    is_valid = True
+    if data.get('title') and not valid_string(data.get('title')):
+        errors.append({
+            'error': '{} is not a valid question title'.format(data.get('title'))
+        })
+        is_valid = False
+    elif data.get('body') and not valid_string(data.get('body')):
+        errors.append({
+            'error': '{} is not a valid question body'.format(data.get('body'))
+        })
+        is_valid = False
+    return is_valid, errors
