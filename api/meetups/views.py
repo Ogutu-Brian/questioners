@@ -26,11 +26,13 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
 
+
 class MeetupViews(APIView):
     """
     Views for meetup endpoints
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_classes = UpdateMeetupSerializer
 
     def post(self, request: Request) -> Response:
         """
@@ -83,10 +85,9 @@ class MeetupViews(APIView):
                         'creator': data.get('creator')
                     }
                 )
-                for image_object in image_list:
-                    meetup.image_url.add(image_object)
-                for tag_item in tag_list:
-                    meetup.tags.add(tag_item)
+                [meetup.image_url.add(image_object)
+                 for image_object in image_list]
+                [meetup.tags.add(tag_item) for tag_item in tag_list]
                 response = Response({
                     'data': serializer.data,
                     'status': status.HTTP_201_CREATED
@@ -111,24 +112,113 @@ class MeetupViews(APIView):
         Delete /api/meetups/<meetupId>/
         """
         response = {}
-
-        try:
-            meetup = Meetup.objects.get(id=meetupid)
-            meetup.delete()
+        if not (request.user.is_staff):
             response = {
-                "message": "succefully deleted",
-                "status": status.HTTP_204_NO_CONTENT
+                'error': 'You are not an admin',
+                'status': status.HTTP_400_BAD_REQUEST
             }
-        except (ObjectDoesNotExist, ValidationError) as e:
-            response = {
-                'error': str(e),
-                'status': status.HTTP_404_NOT_FOUND,
-            }
-
+        else:
+            try:
+                meetup = Meetup.objects.get(id=meetupid)
+                meetup.delete()
+                response = {
+                    "message": "succefully deleted",
+                    "status": status.HTTP_204_NO_CONTENT
+                }
+            except (ObjectDoesNotExist, ValidationError) as e:
+                response = {
+                    'error': str(e),
+                    'status': status.HTTP_404_NOT_FOUND,
+                }
         return Response(
             data=response,
             status=response.get('status')
         )
+
+    def put(self, request: Request, meetupid: str) -> Response:
+
+        is_valid_meetup, errors = valid_meetup(request)
+        meetup = None
+        try:
+            meetup = Meetup.objects.get(id=meetupid)
+        except:
+            errors.append({
+                'Error': 'The specified meetup does not exist'
+            })
+
+            is_valid_meetup = False
+
+        if is_valid_meetup:
+            request.data['creator'] = request.user
+            tags = request.data.get('tags')
+            images = request.data.get('images')
+            tag_list = []
+            image_list = []
+            if tags:
+                meetup.tags.clear()
+                for tag in tags:
+                    tag_object, created = Tag.objects.update_or_create(
+                        tag_name=tag,
+                        defaults={
+                            'tag_name': tag
+                        }
+                    )
+                    tag_list.append(tag_object)
+            if images:
+                meetup.image_url.clear()
+                for image in images:
+                    image_object, created = Image.objects.update_or_create(
+                        image_url=image,
+                        defaults={
+                            'image_url': image
+                        }
+                    )
+                    image_list.append(image_object)
+            data = request.data
+            if not(request.user.is_staff):
+                context = {
+                    'Error': 'Only an admin user can update a meetup'
+                }
+                response = Response(
+                    context, status.HTTP_401_UNAUTHORIZED
+                )
+            else:
+                data = request.data
+                qs = Meetup.objects.filter(title=data.get('title'))
+                if data.get('title'):
+                    qs = qs.exclude(pk=meetup.id)
+                    if qs.exists():
+                        return Response(
+                            data={
+                                'Error': 'That title is already taken'
+                            },
+                            status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
+                    meetup.title = data.get('title')
+                if data.get('location'):
+                    meetup.location = data.get('location')
+                if data.get('scheduled_date'):
+                    meetup.scheduled_date = data.get('scheduled_date')
+                if data.get('body'):
+                    meetup.body = data.get('body')
+                [meetup.image_url.add(image_object)
+                 for image_object in image_list]
+                [meetup.tags.add(tag_item) for tag_item in tag_list]
+                meetup.save()
+                serializer = UpdateMeetupSerializer(meetup)
+                context = {
+                    'data': [serializer.data],
+                }
+                response = Response(
+                    data=context,
+                    status=status.HTTP_201_CREATED
+                )
+        else:
+            response = Response(
+                data=errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return response
 
 
 class GetAllMeetups(APIView):
@@ -221,102 +311,6 @@ class GetUpcomingMeetups(APIView):
                     'status': status.HTTP_404_NOT_FOUND
                 },
                 status=status.HTTP_404_NOT_FOUND
-            )
-        return response
-
-
-class UpdateMeetup(APIView):
-    """
-    Class for updating meetups endpoint
-    """
-
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_classes = UpdateMeetupSerializer
-
-    def put(self, request: Request, id: str) -> Response:
-
-        is_valid_meetup, errors = valid_meetup(request)
-        meetup = None
-        try:
-            meetup = Meetup.objects.get(id=id)
-        except:
-            errors.append({
-                'Error': 'The specified meetup does not exist'
-            })
-
-            is_valid_meetup = False
-
-        if is_valid_meetup:
-            request.data['creator'] = request.user
-            tags = request.data.get('tags')
-            images = request.data.get('images')
-            tag_list = []
-            image_list = []
-            if tags:
-                meetup.tags.clear()
-                for tag in tags:
-                    tag_object, created = Tag.objects.update_or_create(
-                        tag_name=tag,
-                        defaults={
-                            'tag_name': tag
-                        }
-                    )
-                    tag_list.append(tag_object)
-            if images:
-                meetup.image_url.clear()
-                for image in images:
-                    image_object, created = Image.objects.update_or_create(
-                        image_url=image,
-                        defaults={
-                            'image_url': image
-                        }
-                    )
-                    image_list.append(image_object)
-            data = request.data
-            if not(request.user.is_staff):
-                context = {
-                    'Error': 'Only an admin user can update a meetup'
-                }
-                response = Response(
-                    context, status.HTTP_401_UNAUTHORIZED
-                )
-            else:
-                data = request.data
-                qs = Meetup.objects.filter(title=data.get('title'))
-                if data.get('title'):
-                    qs = qs.exclude(pk=meetup.id)
-                    if qs.exists():
-                        return Response(
-                            data={
-                                'Error': 'That title is already taken'
-                            },
-                            status=status.HTTP_406_NOT_ACCEPTABLE
-                        )
-                    meetup.title = data.get('title')
-                if data.get('location'):
-                    meetup.location = data.get('location')
-                if data.get('scheduled_date'):
-                    meetup.scheduled_date = data.get('scheduled_date')
-                if data.get('body'):
-                    meetup.body = data.get('body')
-                for image_object in image_list:
-                    meetup.image_url.add(image_object)
-                for tag_item in tag_list:
-                    meetup.tags.add(tag_item)
-
-                meetup.save()
-                serializer = UpdateMeetupSerializer(meetup)
-                context = {
-                    'data': [serializer.data],
-                }
-                response = Response(
-                    data=context,
-                    status=status.HTTP_201_CREATED
-                )
-        else:
-            response = Response(
-                data=errors,
-                status=status.HTTP_400_BAD_REQUEST
             )
         return response
 

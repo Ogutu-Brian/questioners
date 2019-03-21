@@ -1,16 +1,14 @@
 from django.shortcuts import render, get_object_or_404, _get_queryset
 from django.core.exceptions import ValidationError
 from utils.validators import valid_question
-
 from rest_framework import permissions, status
-from rest_framework.views import APIView, Response
+from rest_framework.views import APIView, Response, Request
 from rest_framework.pagination import PageNumberPagination
-
-from questions.models import Question
+from questions.models import Question, QuestionVote
 from questions.serializers import QuestionsSerializer, ViewQuestionsSerializer
 from meetups.models import Meetup
 from utils.validators import valid_string
-# Create your views here.
+from users.serializers import FetchUserSerializer
 
 
 class QuestionViews(APIView):
@@ -179,3 +177,169 @@ class QuestionEditViews(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
         return response
+
+
+class ViewQuestionsView(APIView):
+    """
+    A view for fetching questions specific to a meetup
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, id=None):
+        """
+        Endpoint for fetching all questions specific to the meetup id specified
+        """
+        questions = Question.objects.filter(meetup_id=id)
+        if questions:
+            page_limit = request.GET.get('page_limit')
+            if not page_limit:
+                page_limit = 10
+            pagination_class = PageNumberPagination()
+            pagination_class.page_size = page_limit
+            page = pagination_class.paginate_queryset(questions, request)
+            serializer = ViewQuestionsSerializer(page, many=True)
+            paginated_response = pagination_class.get_paginated_response(
+                serializer.data)
+            return paginated_response
+        else:
+            response = Response({
+                'error': 'There are no questions'
+            }, status=status.HTTP_404_NOT_FOUND)
+        return response
+
+
+def give_vote(request: Request, meetup_id: str, question_id: str, vote_value: int) -> Response:
+    """
+    A function to handle voting
+    """
+    response = None
+    try:
+        meetup = Meetup.objects.get(id=meetup_id)
+        try:
+            question_query = Question.objects.filter(
+                id=question_id, meetup=meetup)
+            if not question_query:
+                response = Response(
+                    data={
+                        'error': 'The meetup does not have a question with that id'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                question = question_query[0]
+                user = request.user
+                if QuestionVote.objects.filter(user=user, question=question, vote=vote_value):
+                    if vote_value == 1:
+                        error_message = 'You cannot upvote a question more than once'
+                    else:
+                        error_message = 'You cannot downvote a question more than once'
+                    response = Response(
+                        data={
+                            'error': error_message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                else:
+                    vote, created = QuestionVote.objects.update_or_create(
+                        question=question,
+                        user=user,
+                        defaults={
+                            'vote': vote_value
+                        },
+                    )
+                    upvotes = QuestionVote.objects.filter(
+                        question=question, vote__gte=1).count()
+                    downvotes = QuestionVote.objects.filter(
+                        question=question, vote__lt=1).count()
+                    votes = upvotes-downvotes
+                    voter = FetchUserSerializer(
+                        vote.user.__dict__, many=False).data
+                    if created:
+                        response = Response(
+                            data={
+                                'data':
+                                [{
+                                    'question_id': vote.question.id,
+                                    'question_title': vote.question.title,
+                                    'question_body': vote.question.body,
+                                    'upvotes': upvotes,
+                                    'downvotes': downvotes,
+                                    'votes': votes,
+                                    'voter': voter
+                                }],
+                                'message': 'Vote submitted sucessfully'
+                            },
+                            status=status.HTTP_201_CREATED
+                        )
+                    else:
+                        response = Response(
+                            data={
+                                'data':
+                                [{
+                                    'question_id': vote.question.id,
+                                    'question_title': vote.question.title,
+                                    'question_body': vote.question.body,
+                                    'upvotes': upvotes,
+                                    'downvotes': downvotes,
+                                    'votes': votes,
+                                    'voter': voter
+                                }],
+                                'message': 'You have successfully updated your vote'
+                            },
+                            status=status.HTTP_201_CREATED
+                        )
+        except:
+            response = Response(
+                data={
+                    'error': 'A question with that id does not exist'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    except:
+        response = Response(
+            data={
+                'error': 'A meetup with that id does not exist'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    return response
+
+
+class UpvoteQuestion(APIView):
+    """
+    A viw for handling question upvotes
+    PATCH /api/meetups/{meetupId}/questions/{questionId}/upvote
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request: Request, meetup_id: str, question_id: str) -> Response:
+        """
+        upvote view function 
+        """
+        vote_value = 1
+        return give_vote(
+            request=request,
+            meetup_id=meetup_id,
+            question_id=question_id,
+            vote_value=vote_value
+        )
+
+
+class DownvoteQuestion(APIView):
+    """
+    class to handle downvotes of questions
+    PATCH /api/meetups/{meetupId}/questions/{questionId}/downvote
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request: Request, meetup_id: str, question_id: str) -> Response:
+        """
+        upvote view function 
+        """
+        vote_value = -1
+        return give_vote(
+            request=request,
+            meetup_id=meetup_id,
+            question_id=question_id,
+            vote_value=vote_value
+        )

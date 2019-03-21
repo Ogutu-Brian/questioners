@@ -82,7 +82,7 @@ def schema_view_swagger(request):
                     description='Resend account activation email'
                 ),
                 'social signup': coreapi.Link(
-                    url='/api/auth/google/signup',
+                    url='/api/auth/social/signup',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -114,7 +114,7 @@ def schema_view_swagger(request):
                     description='Using basic authentication to login'
                 ),
                 'google auth': coreapi.Link(
-                    url='/api/auth/google/login',
+                    url='/api/auth/google_oauth2/',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -325,12 +325,12 @@ def schema_view_swagger(request):
                         )
                     ]
                 ),
-                'Update specific meetup': coreapi.Link(
-                    url='/api/update/{id}',
+                'Update Meetup': coreapi.Link(
+                    url='/api/meetups/{meetupId}/',
                     action='PUT',
                     fields=[
                         coreapi.Field(
-                            name='id',
+                            name='meetupId',
                             required=True,
                             location='path',
                             description='The meetup id'
@@ -363,12 +363,14 @@ def schema_view_swagger(request):
                             name='tags',
                             required=False,
                             location='form',
+                            type='array',
                             description='Meetup tags'
                         ),
                         coreapi.Field(
                             name='images',
                             required=False,
                             location='form',
+                            type='array',
                             description='Meetup image urls'
                         )
                     ],
@@ -402,6 +404,111 @@ def schema_view_swagger(request):
                     ],
                     description='Posting a question to a specific meetup endpoint'
                 ),
+                'view question on meetups': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions',
+                    action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the meetup'
+                        ),
+                        coreapi.Field(
+                            name='page',
+                            required=False,
+                            location='query',
+                            description='page number'
+                        ),
+                        coreapi.Field(
+                            name='page_limit',
+                            required=False,
+                            location='query',
+                            description='The limit of data displayed per page'
+                        ),
+                    ],
+                    description='Fetching questions on a specific meetup'
+                ),
+                'Delete questions': coreapi.Link(
+                    url='/api/meetups/{meetupid}/questions/{questionid}/',
+                    action='DELETE',
+                    description='Delete a specific question',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupid',
+                            required=True,
+                            location='path'
+                        ),
+                        coreapi.Field(
+                            name='questionid',
+                            required=True,
+                            location='path'
+                        )
+                    ],
+                ),
+                'Upvote a question': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/upvote',
+                    action='PATCH',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the meetup from which the question is got'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='Id of the question to be upvoted'
+                        )
+                    ],
+                    description='Upvoting a specific question'
+                ),
+                'Downvote a question': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/downvote',
+                    action='PATCH',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the meetup from which the question is got'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='Id of the question to be downvoted'
+                        )
+                    ],
+                    description='Downvoting a specific question'
+                ),
+                'view question on meetups': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions',
+                    action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the meetup'
+                        ),
+                        coreapi.Field(
+                            name='page',
+                            required=False,
+                            location='query',
+                            description='page number'
+                        ),
+                        coreapi.Field(
+                            name='page_limit',
+                            required=False,
+                            location='query',
+                            description='The limit of data displayed per page'
+                        ),
+                    ],
+                    description='Fetching questions on a specific meetup'
+                ),
                 'Update existing questions': coreapi.Link(
                     # fetch meetup id from the database
                     url='/api/meetups/{meetupId}/questions/{questionId}/',
@@ -434,48 +541,6 @@ def schema_view_swagger(request):
                     ],
                     description='Update an existing question'
                 ),
-                'Delete questions': coreapi.Link(
-                    url='/api/meetups/{meetupId}/questions/{questionId}/',
-                    action='DELETE',
-                    description='Delete a specific question',
-                    fields=[
-                        coreapi.Field(
-                            name='meetupId',
-                            required=True,
-                            location='path'
-                        ),
-                        coreapi.Field(
-                            name='questionId',
-                            required=True,
-                            location='path'
-                        )
-                    ],
-                ),
-                'view question on meetups': coreapi.Link(
-                    url='/api/meetups/{meetupId}/questions',
-                    action='GET',
-                    fields=[
-                        coreapi.Field(
-                            name='meetupId',
-                            required=True,
-                            location='path',
-                            description='Id of the meetup'
-                        ),
-                        coreapi.Field(
-                            name='page',
-                            required=False,
-                            location='query',
-                            description='page number'
-                        ),
-                        coreapi.Field(
-                            name='page_limit',
-                            required=False,
-                            location='query',
-                            description='The limit of data displayed per page'
-                        ),
-                    ],
-                    description='Fetching questions on a specific meetup'
-                )
             },
             'Answers': {
                 'new answer': coreapi.Link(
@@ -489,7 +554,7 @@ def schema_view_swagger(request):
                             description='Id of the specific meetup id'
                         ),
                         coreapi.Field(
-                            name='id',
+                            name='questionId',
                             required=True,
                             location='path',
                             description='Id of the specific question id'
@@ -534,8 +599,7 @@ def schema_view_swagger(request):
                     ],
                     description='Update an existing answer'
                 ),
-            }
-
+            },
         }
     )
     return response.Response(schema)
