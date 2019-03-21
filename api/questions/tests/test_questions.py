@@ -2,7 +2,7 @@ from rest_framework import status
 
 from .basetests import BaseTest
 from questions.models import Question
-
+import json
 
 class QuestionModelTest(BaseTest):
     """
@@ -69,6 +69,15 @@ class PostQuestionTest(BaseTest):
         self.is_authenticated()
         response = self.post_with_invalid_meetup()
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_post_special_characters(self):
+        """
+        Test posting special characters
+        """
+        self.is_authenticated()
+        response = self.post_special_characters()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "You cannot post special characters")
 
 class ViewQuestionTest(BaseTest):
     """

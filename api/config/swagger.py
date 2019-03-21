@@ -403,7 +403,24 @@ def schema_view_swagger(request):
                         )
                     ],
                     description='Posting a question to a specific meetup endpoint'
-                )
+                ),
+                'Delete questions': coreapi.Link(
+                    url='/api/meetups/{meetupid}/questions/{questionid}/',
+                    action='DELETE',
+                    description='Delete a specific question',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupid',
+                            required=True,
+                            location='path'
+                        ),
+                        coreapi.Field(
+                            name='questionid',
+                            required=True,
+                            location='path'
+                        )
+                    ],
+                ),
             },
             'Answers': {
                 'new answer': coreapi.Link(
@@ -485,7 +502,7 @@ def schema_view_swagger(request):
                             description='A new description of the answer'
                         )
                     ],
-                    description = 'Update an existing answer'
+                    description='Update an existing answer'
                 ),
             }
 

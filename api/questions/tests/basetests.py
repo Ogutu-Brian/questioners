@@ -22,12 +22,20 @@ class BaseTest(APITestCase):
     """
     The base where are default test case settings kept
     """
-
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects._create_user(
             name="Abraham Kamau",
             email="admin@questioner.com",
+            password="@Admin123"
+        )
+        self.user.is_active = True
+        self.user.is_admin = True
+        self.user.save()
+
+        self.user2 = User.objects._create_user(
+            name="Abraham Grean",
+            email="grean@questioner.com",
             password="@Admin123"
         )
         self.user.is_active = True
@@ -50,16 +58,6 @@ class BaseTest(APITestCase):
             created_by=self.user
         )
 
-    def login_user(self, email="", password=""):
-        url = reverse("user_login")
-        return self.client.post(
-            url,
-            data=json.dumps({
-                "email": email,
-                "password": password
-            }),
-            content_type="application/json"
-        )
     def is_authenticated(self):
         """Authenticate user before posting data
         """
@@ -128,6 +126,22 @@ class BaseTest(APITestCase):
         )
         return response
 
+    def post_special_characters(self):
+        """
+        Post invalid characters
+        """
+        meetup_id = str(self.meetup.id)
+        url = reverse('question', args=[meetup_id])
+        response = self.client.post(
+            url,
+            data = json.dumps({
+                "title": "!@#$%^&*()(*&^%",
+                "body": "We test models cause we also want to know if the are working"
+            }),
+            content_type="application/json"
+        )
+        return response
+
     def get_questions_with_valid_meetup_id(self):
         """
         Post question to invalid meetup
@@ -153,4 +167,56 @@ class BaseTest(APITestCase):
         meetup_id = "f"
         url = reverse('view_questions', args=[meetup_id])
         response = self.client.get(url)
+        return response
+
+    def delete_question(self):
+        """
+        Delete question
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('delete_question', args=[meetup_id, question_id])
+        response = self.client.delete(
+            url,
+            content_type="application/json"
+        )
+        return response
+
+    def delete_invalid_question(self):
+        """
+        Delete an invalid question
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = "f1d63c02-039d-4bdf-806b-45c698f47c3b"
+        url = reverse('delete_question', args=[meetup_id, question_id])
+        response = self.client.delete(
+            url,
+            content_type="application/json"
+        )
+        return response
+    
+    def delete_with_invalid_meetup(self):
+        """
+        Delete an invalid meetup
+        """
+        meetup_id = "-039d-4bdf-806b-45c698f47c3b"
+        question_id = str(self.question.id)
+        url = reverse('delete_question', args=[meetup_id, question_id])
+        response = self.client.delete(
+            url,
+            content_type="application/json"
+        )
+        return response
+
+    def delete_with_unmatch_meetup(self):
+        """
+        Delete an invalid question
+        """
+        meetup_id = "f1d63c02-039d-4bdf-806b-45c698f47c3b"
+        question_id = str(self.question.id)
+        url = reverse('delete_question', args=[meetup_id, question_id])
+        response = self.client.delete(
+            url,
+            content_type="application/json"
+        )
         return response
