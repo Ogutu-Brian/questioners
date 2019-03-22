@@ -2,9 +2,10 @@
 uril patterns for answers
 """
 from django.urls import path
-from .views import AnswersPostView, UpdateAnswer
+from .views import AnswersPostView, UpdateAnswer, GetAnswerView
 
 urlpatterns = [
-    path('<str:meetupId>/questions/<str:id>/answer/', AnswersPostView.as_view(), name='post_answer'),
+    path('<str:meetupId>/questions/<str:questionId>/answer/', AnswersPostView.as_view(), name='post_answer'),
     path('<meetupId>/questions/<questionId>/answers/<answerId>', UpdateAnswer.as_view(), name='update_answer'),
+    path('<str:meetupId>/questions/<str:questionId>/answers/', GetAnswerView.as_view(), name='Get_all_answers')
 ]

@@ -14,3 +14,12 @@ class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ('body',)
+
+
+class GetAnswerSerializer(serializers.ModelSerializer):
+    """
+    Serializers for Answer models
+    """
+    class Meta:
+        model = Answer
+        fields = '__all__'
