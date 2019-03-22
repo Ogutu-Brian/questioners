@@ -2,7 +2,7 @@
 Views operations for the answers
 """
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError ,ObjectDoesNotExist
 
 from rest_framework.views import APIView, Response
 from rest_framework.request import Request
@@ -88,7 +88,7 @@ class GetAnswerView(APIView):
     We can see all the answers from users in a question
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, meetupId, questionId):
         """
@@ -175,4 +175,48 @@ class UpdateAnswer(APIView):
 
         except ValidationError:
             error = {'error': 'The specified answer does not exist'}
+            return Response(data=error, status=status.HTTP_404_NOT_FOUND)
+
+
+class DeleteAnswer(APIView):
+    """
+    Class to delete a specific answer
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, meetupId, questionId, answerId):
+        """
+        Endpoint to deleting specific answer
+        Delete /api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}/
+        """
+        try:
+            meetid = Meetup.objects.get(id=meetupId)
+        except  (ObjectDoesNotExist, ValidationError) as e:
+            error = {'error': str(e)}
+            return Response(data=error, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            questionid = Question.objects.get(id=questionId)
+        except  (ObjectDoesNotExist, ValidationError) as e:
+            error = {'error': str(e)}
+            return Response(data=error, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            answer = Answer.objects.get(id=answerId)
+            is_authenticated = request.user
+            owner = Answer.objects.filter(
+                creator_id=is_authenticated).first()
+            adminuser = request.user.is_staff
+            user_superuser =request.user.is_superuser
+
+            if user_superuser or adminuser or owner:
+                answer.delete()
+                response = Response(data={'message': 'succefully deleted.'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                response = Response(data={'error': 'only the admin or user who posted the answer can delete it.'},
+                                    status=status.HTTP_401_UNAUTHORIZED)
+            return response
+
+        except (ObjectDoesNotExist, ValidationError) as e:
+            error = {'error': str(e)}
             return Response(data=error, status=status.HTTP_404_NOT_FOUND)
