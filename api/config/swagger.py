@@ -568,6 +568,23 @@ def schema_view_swagger(request):
                     ],
                     description='Create a new Answer'
                 ),
+                'Get all Answers': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/',
+                    action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path'
+                        ),                    
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path'
+                        )
+                    ],
+                    description='get all existing answers'
+                ),
                 'update existing answer': coreapi.Link(
                     url='/api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}',
                     action='PUT',
@@ -599,7 +616,30 @@ def schema_view_swagger(request):
                     ],
                     description='Update an existing answer'
                 ),
-            },
+                'Delete answer': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}/',
+                    action='DELETE',
+                    description='Delete a specific answer',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='A specific meetup id of an existing question' ),
+                        coreapi.Field( 
+                            name='questionId',
+                            required=True, 
+                            location='path',
+                            description='A specific question id of an existing question' ),
+                        coreapi.Field(
+                            name='answerId',
+                            required=True, 
+                            location='path', 
+                            description='A specific answer id of an existing answer' ) 
+                       ]
+                ),
+            }
+
         }
     )
     return response.Response(schema)
