@@ -82,7 +82,7 @@ def schema_view_swagger(request):
                     description='Resend account activation email'
                 ),
                 'social signup': coreapi.Link(
-                    url='/api/auth/social/signup',
+                    url='/api/auth/google/signup',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -114,7 +114,7 @@ def schema_view_swagger(request):
                     description='Using basic authentication to login'
                 ),
                 'google auth': coreapi.Link(
-                    url='/api/auth/google_oauth2/',
+                    url='/api/auth/google/login',
                     action='POST',
                     fields=[
                         coreapi.Field(
