@@ -29,15 +29,25 @@ class UpdateQuestionTest(BaseTest):
         self.assertEqual(
             response.content, b'{"error":"The specified meetup does not exist"}')
 
-    def test_editng_question(self):
+    def test_updating_title(self):
         """
-        Test successful updating of question
+        Test successful updating of question body
         """
         self.is_authenticated()
-        response = self.update_question()
+        response = self.update_question_title()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['message'],
-                         "question updated succesfully")
+                         "You have successfully updated the question")
+
+    def test_updating_body(self):
+        """
+        Test successful updating of question body
+        """
+        self.is_authenticated()
+        response = self.update_question_title()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['message'],
+                         "You have successfully updated the question")
 
     def test_update_without_authentication(self):
         """
@@ -45,16 +55,6 @@ class UpdateQuestionTest(BaseTest):
         """
         response = self.update_question()
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_updating_with_missing_title(self):
-        """
-        Test updating question and title is missing
-        """
-        self.is_authenticated()
-        response = self.update_without_title()
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.content,
-                         b'{"title":["This field may not be blank."]}')
 
     def test_update_with_invalid_body(self):
         """
@@ -72,22 +72,12 @@ class UpdateQuestionTest(BaseTest):
         response = self.update_with_invalid_title()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_updating_with_missing_body(self):
-        """
-        Test posting question without a body
-        """
-        self.is_authenticated()
-        response = self.update_without_body()
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.content,
-                         b'{"body":["This field may not be blank."]}')
-
-    def test_update_without_changing_contents(self):
+    def test_update_title_changing_contents(self):
         """
         Test update_without_changing_contents
         """
         self.is_authenticated()
-        response = self.update_without_changing_contents()
+        response = self.update_with_same_title_contents()
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.content,
-                         b'{"message":"Question is upto date"}')
+                         b'{"message":"Question title is upto date"}')
