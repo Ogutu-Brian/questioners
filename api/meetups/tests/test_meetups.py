@@ -4,7 +4,7 @@ Tests for meetup views and models
 from meetups.tests.initial_setup import TestSetUp
 from rest_framework import status
 import django
-from meetups.models import Meetup
+from meetups.models import Meetup, Rsvp
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from django.test import TestCase
@@ -12,6 +12,7 @@ from rest_framework.test import APIClient
 import json
 from users.models import User
 from rest_framework.reverse import reverse
+from rest_framework.response import Response
 
 
 class TestMeetupModel(TestSetUp):
@@ -382,3 +383,56 @@ class TestRsvpModel(TestCase):
             content_type="application/json"
         )
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestGetRsvos(TestSetUp):
+    """
+    Class for testing fetching Rsvps
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.meetup = Meetup.objects.all()[0]
+        self.rsvps_url = '/api/meetups/{}/rsvps'.format(self.meetup.id)
+        self.invalid_rsvps_url = '/api/meetups/acdd922a-f1ac-4fad-9ed7-fa1013007edb/rsvps'
+        self.rsvp = Rsvp.objects.create(
+            meetup=self.meetup,
+            responder=self.user,
+            response='yes',
+        )
+
+    def get_rsvps_on_meetup(self, meetup_url: str) -> Response:
+        """
+        A method for getting rsvps on a meetup
+        """
+        response = self.client.get(
+            path=meetup_url,
+            format='json'
+        )
+        return response
+
+    def test_invalid_meetup_id(self) -> None:
+        """
+        Tests invalid meetup id in the url
+        """
+        response = self.get_rsvps_on_meetup(meetup_url=self.invalid_rsvps_url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data.get('error'),
+                         'The meetup id is invalid')
+
+    def test_unvaliable_rsvps(self):
+        """
+        Tests unvailable rsvps on a meetup
+        """
+        [rsvp.delete() for rsvp in Rsvp.objects.all()]
+        response = self.get_rsvps_on_meetup(meetup_url=self.rsvps_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data.get('error'),
+                         'There are no rsvps for the meetup')
+
+    def test_successful_rsvp_fetch(self):
+        """
+        Tests successful fetch of rsvps on a meetup
+        """
+        response = self.get_rsvps_on_meetup(meetup_url=self.rsvps_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

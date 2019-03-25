@@ -2,7 +2,8 @@ import uuid
 import datetime
 from django.db import models
 from users.models import User
-
+from typing import List, Dict
+from django.db.models.functions import Lower
 """
 Models for the meetups
 """
@@ -70,6 +71,34 @@ class Meetup(models.Model):
 
     def __str__(self):
         return self.title + " on " + self.scheduled_date.strftime('%m-%d-%Y')
+
+    @property
+    def rsvps(self) -> List:
+        """
+        Gets all rsvp for the meetup
+        """
+        from meetups.serializers import FetchRsvpSerializer
+        rsvps = Rsvp.objects.filter(meetup=self.id)
+        serializer = FetchRsvpSerializer(rsvps, many=True)
+        return serializer.data
+
+    @property
+    def rsvp_summary(self) -> Dict:
+        """
+        Gets rsvp summary
+        """
+        maybe_count = Rsvp.objects.filter(
+            meetup=self.id, response__iexact='maybe').count()
+        yes_count = Rsvp.objects.filter(
+            meetup=self.id, response__iexact='yes').count()
+        no_count = Rsvp.objects.filter(
+            meetup=self.id, response__iexact='no').count()
+        result = {
+            'maybe': maybe_count,
+            'yes': yes_count,
+            'no': no_count
+        }
+        return result
 
 
 class Rsvp(models.Model):
