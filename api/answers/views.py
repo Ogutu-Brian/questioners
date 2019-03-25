@@ -17,16 +17,15 @@ from meetups.models import Meetup
 from .serializers import AnswerSerializer, GetAnswerSerializer, VoteSerializer
 from utils.validators import valid_string
 from users.serializers import FetchUserSerializer
+from utils.token_validation import TokenAllowedPermission
 
-
-# Create your views here.
 
 
 class AnswersPostView(APIView):
     '''
     Views for posting an answer
     '''
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def post(self, request, questionId, meetupId):
         '''
@@ -142,7 +141,7 @@ class UpdateAnswer(APIView):
     """
     Deals with updating a specific answer
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def put(self, request, meetupId, questionId, answerId):
         try:
@@ -200,7 +199,7 @@ class DeleteAnswer(APIView):
     """
     Class to delete a specific answer
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def delete(self, request, meetupId, questionId, answerId):
         """
@@ -244,7 +243,7 @@ class UpvoteAnswer(APIView):
     """
     View for upvoting answer
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def patch(self, request, meetupId, questionId, answerId):
         """
@@ -260,7 +259,7 @@ class DownvoteAnswer(APIView):
     """
     View for downvoting answer
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def patch(self, request, meetupId, questionId, answerId):
         """

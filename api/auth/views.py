@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.urls.exceptions import NoReverseMatch
 from django.utils.translation import ugettext_lazy as _
@@ -25,7 +25,7 @@ from config import settings as sett
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-from users.models import User
+from users.models import User, TokenBlacklist
 
 from config import exceptions
 from . import serializers
@@ -33,6 +33,9 @@ from . import mailer
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
+
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 User = get_user_model()
 
@@ -80,11 +83,12 @@ class SignUpView(generics.CreateAPIView):
         elif settings.SEND_CONFIRMATION_EMAIL:
             mailer.ConfirmationEmail(self.request, context, recipient).send()
 
+
 class SocialSigUpView(APIView):
     """
     A signup endpoint using google auth
     """
-    
+
     permission_classes = [permissions.AllowAny]
     serializer_class = serializers.SocialAuthSerializer
 
@@ -102,7 +106,7 @@ class SocialSigUpView(APIView):
 
             if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
                 raise ValueError('Wrong issuer')
-                
+
             user, created = User.objects.update_or_create(
                 email=idinfo.get('email'),
                 defaults={
@@ -135,11 +139,12 @@ class SocialSigUpView(APIView):
                 response = {
                     "error": "This account had been activated"
                 }, status.HTTP_400_BAD_REQUEST
-            return Response(response[0],response[1])
+            return Response(response[0], response[1])
         except ValueError as e:
             return Response(
-                {'error':str(e)},status.HTTP_400_BAD_REQUEST
+                {'error': str(e)}, status.HTTP_400_BAD_REQUEST
             )
+
 
 class ResendActivationView(utils.ActionViewMixin, generics.GenericAPIView):
     serializer_class = serializers.EmailAccountSerializer
@@ -199,18 +204,24 @@ class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
 
     def _action(self, serializer):
-        token = utils.login_user(self.request, serializer.user)
-        token_serializer_class = serializers.TokenSerializer
-        return Response(data=token_serializer_class(token).data)
+        login(self.request, serializer.user)
+        token = jwt_encode_handler(
+            jwt_payload_handler(serializer.user))
+        resp = {
+            'Message': 'Welcome {}. You are now logged in'.format(serializer.user),
+            'token': token
+        }
+        return Response(data=resp, status=status.HTTP_200_OK)
 
 
 class LogoutView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @staticmethod
-    def delete(request):
-        utils.logout_user(request)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def post(self, request):
+        auth = get_authorization_header(request).split()
+        token = auth[1]
+        TokenBlacklist.objects.update_or_create(token=token)
+        return Response(data={'Message': 'You have been logged out'}, status=status.HTTP_200_OK)
 
 
 class ChangeEmailView(utils.ActionViewMixin, generics.GenericAPIView):
@@ -262,6 +273,7 @@ class PasswordResetView(utils.ActionViewMixin, generics.GenericAPIView):
         for user in self.get_users(serializer.data['email']):
             self.send_password_reset_email(user)
         return Response({"message": "reset link sent to your mail"}, status=status.HTTP_200_OK)
+
     def get_users(self, email):
         if self._users is None:
             email_field_name = get_user_email_field_name(User)
@@ -310,33 +322,28 @@ class SocialAuthView(generics.CreateAPIView):
             if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
                 raise ValueError('Wrong issuer')
         except:
-            data={'Message': 'The token provided is invalid'}
+            data = {'Message': 'The token provided is invalid'}
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
 
         if idinfo:
             email = idinfo.get('email')
             name = idinfo.get('name')
-            token = jwt.encode(
-                {
-                    'user_data': email,
-                    'exp': datetime.now() + timedelta(hours=24)
-                }, sett.SECRET_KEY, algorithm='HS256'
-            )
-        
+
         try:
             if User.objects.get(email=email):
                 if User.objects.get(email=email).is_active:
-                        
+
                     data = {
                         "Message": "You are logged in.",
                         "email": email,
                         "name": name,
-                        "token": token
+                        "token": jwt_encode_handler(
+                            jwt_payload_handler(User.objects.get(email=email)))
                     }
                     return Response(data, status=status.HTTP_200_OK)
-                data={'Message': 'Activate your account to log in'}
+                data = {'Message': 'Activate your account to log in'}
                 return Response(data=data, status=status.HTTP_401_UNAUTHORIZED)
 
         except:
-            data={'Message': 'No user with the given credentials found'}
+            data = {'Message': 'No user with the given credentials found'}
             return Response(data=data, status=status.HTTP_404_NOT_FOUND)

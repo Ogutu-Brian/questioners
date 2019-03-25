@@ -1,6 +1,4 @@
 import json
-import responses
-import re
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
@@ -56,6 +54,8 @@ class BaseTest(APITestCase):
             password="@Admin123"
         )
 
+        self.logout_url = reverse('user_logout')
+
 
 class LoginTest(BaseTest):
     """
@@ -75,4 +75,23 @@ class LoginTest(BaseTest):
         Test incorrect user login credentials
         """
         response = self.login_user("abraham", "aBu#123")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout(self):
+        """
+        Test logout
+        """
+        resp = self.login_user("admin@questioner.com", "@Admin123")
+        token = resp.data.get("token", None)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response = self.client.post(path=self.logout_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['Message'], 'You have been logged out')
+
+    def test_logout_no_token(self):
+        """
+        Test already logged out logout
+        """
+        response = self.client.post(path=self.logout_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+

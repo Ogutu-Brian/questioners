@@ -19,6 +19,7 @@ from .serializers import (
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from utils.validators import valid_meetup
+from utils.token_validation import TokenAllowedPermission
 from rest_framework.request import Request
 from .models import Meetup, Tag, Image, Rsvp
 from typing import Tuple
@@ -31,7 +32,7 @@ class MeetupViews(APIView):
     """
     Views for meetup endpoints
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
     serializer_classes = UpdateMeetupSerializer
 
     def post(self, request: Request) -> Response:
@@ -319,7 +320,7 @@ class RspvPostView(APIView):
     """
     User can post an Rsvp
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def post(self, request, id):
         """

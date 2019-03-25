@@ -7,6 +7,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.utils import timezone
 from datetime import datetime
+from rest_framework.authtoken.models import Token
+
 
 from users.models import User
 from meetups.models import Meetup
@@ -69,7 +71,8 @@ class DeleteMeetTest(APITestCase):
         """
         Authenticate non admin
         """
-        self.client.force_authenticate(user=self.non_admin)
+        token, created = Token.objects.get_or_create(user=self.non_admin)
+        return self.client.credentials(HTTP_AUTHORIZATION="token " + token.key)
 
     def test_delete_correct_meetid(self):
         '''
@@ -106,7 +109,7 @@ class DeleteMeetTest(APITestCase):
 
     def test_user_not_admin(self):
         """
-        Test if a non admin user can be able to delee a meetup
+        Test if a non admin user can be able to delete a meetup
         """
         self.authenticate_non_admin()
         response = self.client.delete(path=self.delete_url+self.meetup_id+'/')
