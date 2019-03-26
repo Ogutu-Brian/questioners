@@ -315,3 +315,34 @@ class DownvoteQuestion(APIView):
             question_id=question_id,
             vote_value=vote_value
         )
+class ViewSpecificQuestionView(APIView):
+    """
+    Class for viewing specific question
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, m_id=None, id=None):
+        """
+        Endpoint for fetching a specific question to the meetup id specified
+        """
+        try:
+            meetup = Meetup.objects.filter(id=m_id).first()
+        except ValidationError:
+            data = {'error': 'The specified meetup does not exist'}
+            return Response(data, status.HTTP_404_NOT_FOUND)
+        try:
+            meetup_id = Question.objects.filter(meetup_id=m_id).first()
+            if meetup_id:
+                question = Question.objects.filter(id=id).first()
+                if question:
+                    serializer = ViewQuestionsSerializer(question)
+                    return Response({'question': serializer.data}, status.HTTP_200_OK)
+                return Response({
+                    "error": "That question is not found"
+                }, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                "error": "There are no questions for that meetup"
+            }, status=status.HTTP_404_NOT_FOUND)
+        except ValidationError:
+            data = {'error': 'The specified question does not exist'}
+            return Response(data, status.HTTP_404_NOT_FOUND)

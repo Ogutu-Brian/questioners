@@ -302,6 +302,36 @@ class BaseTest(APITestCase):
         response = self.client.get(url)
         return response
 
+    def get_one_question_with_valid_meetup(self):
+        """
+        Post question to invalid meetup
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('specific_question', args=[meetup_id, question_id])
+        response = self.client.get(url)
+        return response
+
+    def get_one_question_with_invalid_meetup(self):
+        """
+        view question to invalid meetup
+        """
+        meetup_id = "f1d63c02-039d-4bdf-806b-45c698f47c3"
+        question_id = str(self.question.id)
+        url = reverse('specific_question', args=[meetup_id, question_id])
+        response = self.client.get(url)
+        return response
+
+    def get_one_question_with_invalid_questionId(self):
+        """
+        view question to invalid meetup
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = "f1d63c02-039d-4bdf-806b-45c698f47c3"
+        url = reverse('specific_question', args=[meetup_id, question_id])
+        response = self.client.get(url)
+        return response
+
     def get_question_with_invalid_uuid(self):
         """
         view question to invalid meetup uuid

@@ -99,3 +99,30 @@ class ViewQuestionTest(BaseTest):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.content,
                          b'{"error":"There are no questions"}')
+
+class ViewOneQuestionTest(BaseTest):
+    """
+    Tests for viewing one question for a specific meetup
+    """
+
+    def test_getting_one_question_with_valid_meetup(self):
+        """
+        Test view one question with valid meetup
+        """
+        response = self.get_one_question_with_valid_meetup()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_getting_one_question_with_no_meetup(self):
+        """
+        Test viewing questions with valid meetup_id but no questions_posted
+        """
+        response = self.get_one_question_with_invalid_meetup()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_getting_one_question_with_invalid_questionId(self):
+        """
+        Test viewing questions with valid meetup_id but no questions_posted
+        """
+        response = self.get_one_question_with_invalid_questionId()
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        

@@ -295,7 +295,7 @@ def schema_view_swagger(request):
                     description='View upcoming meetups'
                 ),
                 'Rsvp meetup': coreapi.Link(
-                    url='/api/{meetupId}/rsvp',
+                    url='/api/meetups/{meetupId}/rsvp',
                     action='POST',
                     description='Rsvp a specific meetup',
                     fields=[
@@ -510,6 +510,25 @@ def schema_view_swagger(request):
                     ],
                     description='Fetching questions on a specific meetup'
                 ),
+                'View a question': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}',
+                    action='GET',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='Id of the meetup from which the question is gotten'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='Id of the question to be viewed'
+                        )
+                    ],
+                    description='Viewing a specific question'
+                ),
                 'Update existing questions': coreapi.Link(
                     # fetch meetup id from the database
                     url='/api/meetups/{meetupId}/questions/{questionId}/',
@@ -706,3 +725,4 @@ def schema_view_swagger(request):
         }
     )
     return response.Response(schema)
+    
