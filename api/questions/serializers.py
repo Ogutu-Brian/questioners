@@ -35,3 +35,12 @@ class ViewQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = '__all__'
+
+
+class UpdateQuestionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating questions
+    """
+    class Meta:
+        model = Question
+        fields = '__all__'

@@ -114,7 +114,7 @@ class BaseTest(APITestCase):
             content_type="application/json"
         )
         return response
-        
+
     def post_with_invalid_meetup(self):
         """
         Post question to invalid meetup
@@ -164,6 +164,22 @@ class BaseTest(APITestCase):
         )
         return response
 
+    def update_question_title(self):
+        """
+        update question 
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
+                "title": "test for edit question"
+            }),
+            content_type="application/json"
+        )
+        return response
+
     def update_invalid_question_id(self):
         """
         update invalid question
@@ -181,6 +197,7 @@ class BaseTest(APITestCase):
         )
 
         return response
+
     def update_invalid_meetup_id(self):
         """
         update invalid question with invalid meetup id
@@ -199,41 +216,7 @@ class BaseTest(APITestCase):
 
         return response
 
-    def update_without_title(self):
-        """
-        update question without a title
-        """
-        meetup_id = str(self.meetup.id)
-        question_id = str(self.question.id)
-        url = reverse('edit_question', args=[meetup_id, question_id])
-        response = self.client.put(
-            url,
-            data=json.dumps({
-                "title": "",
-                "body": "thr above is title is emptry"
-            }),
-            content_type="application/json"
-        )
-        return response
-
-    def update_without_body(self):
-        """
-        update question without a body
-        """
-        meetup_id = str(self.meetup.id)
-        question_id = str(self.question.id)
-        url = reverse('edit_question', args=[meetup_id, question_id])
-        response = self.client.put(
-            url,
-            data=json.dumps({
-                "title": "yhe body below is empty",
-                "body": ""
-            }),
-            content_type="application/json"
-        )
-        return response
-
-    def update_without_changing_contents(self):
+    def update_with_same_title_contents(self):
         """
         update question without changing the body contents
         """
@@ -243,7 +226,22 @@ class BaseTest(APITestCase):
         response = self.client.put(
             url,
             data=json.dumps({
-                "title": "Why are we testing models",
+                "title": "Why are we testing models"
+            }),
+            content_type="application/json"
+        )
+        return response
+
+    def update_with_same_body_contents(self):
+        """
+        update question without changing the body contents
+        """
+        meetup_id = str(self.meetup.id)
+        question_id = str(self.question.id)
+        url = reverse('edit_question', args=[meetup_id, question_id])
+        response = self.client.put(
+            url,
+            data=json.dumps({
                 "body": "We test models cause we also want to know if the are working"
             }),
             content_type="application/json"

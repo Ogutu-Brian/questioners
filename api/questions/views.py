@@ -5,7 +5,7 @@ from rest_framework import permissions, status
 from rest_framework.views import APIView, Response, Request
 from rest_framework.pagination import PageNumberPagination
 from questions.models import Question, QuestionVote
-from questions.serializers import QuestionsSerializer, ViewQuestionsSerializer
+from questions.serializers import QuestionsSerializer, ViewQuestionsSerializer, UpdateQuestionSerializer
 from meetups.models import Meetup
 from utils.validators import valid_string
 from users.serializers import FetchUserSerializer
@@ -74,31 +74,39 @@ class QuestionEditViews(APIView):
                 error = {'error': 'The specified question does not exist'}
                 return Response(data=error, status=status.HTTP_404_NOT_FOUND)
             try:
-                request.data['created_by'] = request.user
-                is_authenticated = request.user
-                owner = Question.objects.filter(
-                    created_by_id=is_authenticated).first()
-                meetup_id = Question.objects.filter(meetup_id=m_id).first()
-
-                if owner:
+                question = Question.objects.get(id=id)
+                owner = question.created_by
+                if owner.id == request.user.id:
 
                     obj = Question.objects.get(id=id)
-                    serializer = QuestionsSerializer(obj, data=request.data)
                     u_title = Question.objects.filter(
                         title=request.data.get('title'))
                     u_body = Question.objects.filter(
                         body=request.data.get('body'))
-                    if serializer.is_valid():
-                        if u_title and u_body:
+                    if request.data.get('title'):
+                        if u_title:
                             return Response({
-                                "message": "Question is upto date"
+                                "message": "Question title is upto date"
                             }, status=status.HTTP_400_BAD_REQUEST)
-                        Question.objects.filter(id=id).update(
-                            title=request.data.get('title').strip(),
-                            body=request.data.get('body').strip()
-                        )
-                        return Response({"data": serializer.data, "message": "question updated succesfully"}, status=status.HTTP_201_CREATED)
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                        newtitle = request.data.get('title').strip()
+                        obj.title = newtitle
+                    if request.data.get('body'):
+                        if u_body:
+                            return Response({
+                                "message": "Question body upto date"
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                        newbody = request.data.get('body').strip()
+                        obj.body = newbody
+                    obj.save()
+                    serializer = UpdateQuestionSerializer(obj)
+                    context = {
+                        'message': 'You have successfully updated the question',
+                        'data': serializer.data
+                    }
+                    return Response(
+                        data=context,
+                        status=status.HTTP_201_CREATED
+                    )
                 return Response({
                     "error": "You are not the owner of this question"
                 }, status=status.HTTP_401_UNAUTHORIZED)
@@ -315,6 +323,8 @@ class DownvoteQuestion(APIView):
             question_id=question_id,
             vote_value=vote_value
         )
+
+
 class ViewSpecificQuestionView(APIView):
     """
     Class for viewing specific question
