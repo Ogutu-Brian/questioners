@@ -6,6 +6,7 @@ from rest_framework import response
 from rest_framework.permissions import AllowAny
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 import coreapi
+import os
 
 
 @api_view()
@@ -15,7 +16,7 @@ import coreapi
 def schema_view_swagger(request):
     schema = coreapi.Document(
         title='Questioner API',
-        url='https://questioners-two-staging.herokuapp.com/',  # replace with your url
+        url=os.getenv('SWAGGER_URL'), 
         content={
             'Users': {
                 'signup': coreapi.Link(
