@@ -46,10 +46,12 @@ class FetchMeetupSerializer(serializers.ModelSerializer):
     tags = serializers.StringRelatedField(many=True)
     image_url = serializers.StringRelatedField(many=True)
     creator = FetchUserSerializer()
+    rsvp_summary = serializers.ReadOnlyField()
 
     class Meta:
         model = Meetup
-        fields = '__all__'
+        fields = ('id', 'created_on', 'updated_on', 'title', 'body', 'location',
+                  'scheduled_date', 'tags', 'image_url', 'creator', 'rsvp_summary')
 
 
 class UpdateMeetupSerializer(serializers.ModelSerializer):
@@ -84,3 +86,14 @@ class RsvpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rsvp
         fields = ("id", "response", "created_on", "updated_on")
+
+
+class FetchRsvpSerializer(serializers.ModelSerializer):
+    """
+    Serializer for fetching rsvp data
+    """
+    responder = FetchUserSerializer()
+
+    class Meta:
+        model = Rsvp
+        fields = '__all__'

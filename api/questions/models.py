@@ -4,7 +4,7 @@ from django.db import models
 
 from users.models import User
 from meetups.models import Meetup
-
+from typing import Dict
 # Create your models here.
 
 
@@ -26,7 +26,7 @@ class Question(models.Model):
         ordering = ['created_at', ]
 
     @property
-    def votes(self):
+    def votes(self) -> Dict:
         """
         Gets votes statistics specific to a question
         """

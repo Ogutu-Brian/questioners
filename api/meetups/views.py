@@ -315,24 +315,6 @@ class GetUpcomingMeetups(APIView):
         return response
 
 
-class RsvpView(APIView):
-    """
-    We can see all the response from users
-    """
-
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        """
-        Get all available RSVP
-        """
-        response = Rsvp.objects.all()
-        serializer = RsvpSerializer(response, many=True)
-        return Response(
-            {"rsvp": serializer.data}
-        )
-
-
 class RspvPostView(APIView):
     """
     User can post an Rsvp
@@ -365,3 +347,40 @@ class RspvPostView(APIView):
             return Response({
                 "error": "No meetup found"
             }, status=status.HTTP_404_NOT_FOUND)
+
+
+class GetRsvps(APIView):
+    """
+    Class for handling rsvp records for a specif cmeetup
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request: Request, meetup_id: str) -> Response:
+        """
+        GET /api/meeetups/{meetupID}/rsvps/
+        Gets rsvps statistics on a meetup
+        """
+        response = None
+        try:
+            meetup = Meetup.objects.get(id=meetup_id)
+            if not meetup.rsvps:
+                response = Response(
+                    data={
+                        'error': 'There are no rsvps for the meetup'
+                    }, status=status.HTTP_404_NOT_FOUND
+                )
+            else:
+                response = Response(
+                    data={
+                        'summary': meetup.rsvp_summary,
+                        'data': meetup.rsvps
+                    },
+                    status=status.HTTP_200_OK
+                )
+        except:
+            response = Response(
+                data={
+                    'error': 'The meetup id is invalid'
+                }, status=status.HTTP_400_BAD_REQUEST
+            )
+        return response
