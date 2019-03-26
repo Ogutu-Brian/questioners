@@ -545,7 +545,7 @@ def schema_view_swagger(request):
             },
             'Answers': {
                 'new answer': coreapi.Link(
-                    url='/api/meetups/{meetupId}/questions/{questionId}/answer/',
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/',
                     action='POST',
                     fields=[
                         coreapi.Field(
@@ -570,19 +570,31 @@ def schema_view_swagger(request):
                     description='Create a new Answer'
                 ),
                 'Get all Answers': coreapi.Link(
-                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/',
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers',
                     action='GET',
                     fields=[
                         coreapi.Field(
                             name='meetupId',
                             required=True,
                             location='path'
-                        ),                    
+                        ),
                         coreapi.Field(
                             name='questionId',
                             required=True,
                             location='path'
-                        )
+                        ),
+                        coreapi.Field(
+                            name='page',
+                            required=False,
+                            location='query',
+                            description='page number'
+                        ),
+                        coreapi.Field(
+                            name='page_limit',
+                            required=False,
+                            location='query',
+                            description='The limit of data displayed per page'
+                        ),
                     ],
                     description='get all existing answers'
                 ),
@@ -639,6 +651,56 @@ def schema_view_swagger(request):
                             description='A specific answer id of an existing answer' ) 
                        ]
                 ),
+                'upvote answer': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}/upvote',
+                    action='PATCH',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='The Meetup Id'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='The Question Id'
+                        ),
+                        coreapi.Field(
+                            name='answerId',
+                            required=True,
+                            location='path',
+                            description='The Answer Id'
+                        ),
+                    ],
+                    description='Upvote an Answer'
+                ),
+                'downvote answer': coreapi.Link(
+                    url='/api/meetups/{meetupId}/questions/{questionId}/answers/{answerId}/downvote',
+                    action='PATCH',
+                    fields=[
+                        coreapi.Field(
+                            name='meetupId',
+                            required=True,
+                            location='path',
+                            description='The Meetup Id'
+                        ),
+                        coreapi.Field(
+                            name='questionId',
+                            required=True,
+                            location='path',
+                            description='The Question Id'
+                        ),
+                        coreapi.Field(
+                            name='answerId',
+                            required=True,
+                            location='path',
+                            description='The Answer Id'
+                        ),
+                    ],
+                    description='Downvote an Answer'
+                )
             }
 
         }
