@@ -62,21 +62,12 @@ class User(AbstractUser):
     def __str__(self):
         return self.email or str(self.mobile_number)
 
-    @property
-    def token(self):
-        """
-        This method allows us to get the token by calling 'user.token'
-        """
-        return self.generate_jwt_token()
 
-    def generate_jwt_token(self):
-        """This method generates a JSON Web Token during user signup"""
-        user_details = {'email': self.email,
-                        'username': self.username}
-        token = jwt.encode(
-            {
-                'user_data': user_details,
-                'exp': date_time.now() + timedelta(hours=24)
-            }, settings.SECRET_KEY, algorithm='HS256'
-        )
-        return token.decode('utf-8')
+class TokenBlacklist(models.Model):
+    token = models.CharField(max_length=500)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.token
+
+

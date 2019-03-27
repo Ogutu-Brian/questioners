@@ -8,6 +8,7 @@ from questions.models import Question, QuestionVote
 from questions.serializers import QuestionsSerializer, ViewQuestionsSerializer, UpdateQuestionSerializer
 from meetups.models import Meetup
 from utils.validators import valid_string
+from utils.token_validation import TokenAllowedPermission
 from users.serializers import FetchUserSerializer
 
 
@@ -15,7 +16,7 @@ class QuestionViews(APIView):
     """
     View class for performing CRUD operations on questions
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def post(self, request, id=None):
         """
@@ -58,7 +59,7 @@ class QuestionEditViews(APIView):
     class to edit question posted
     /api/meetups/{meetup_id}/questions/{question_id}/
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def put(self, request, id, m_id):
         is_valid_question, errors = valid_question(request)
@@ -290,7 +291,7 @@ class UpvoteQuestion(APIView):
     A viw for handling question upvotes
     PATCH /api/meetups/{meetupId}/questions/{questionId}/upvote
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def patch(self, request: Request, meetup_id: str, question_id: str) -> Response:
         """
@@ -310,7 +311,7 @@ class DownvoteQuestion(APIView):
     class to handle downvotes of questions
     PATCH /api/meetups/{meetupId}/questions/{questionId}/downvote
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, TokenAllowedPermission]
 
     def patch(self, request: Request, meetup_id: str, question_id: str) -> Response:
         """

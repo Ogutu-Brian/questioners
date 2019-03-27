@@ -197,7 +197,7 @@ def schema_view_swagger(request):
                 ),
                 'logout': coreapi.Link(
                     url='/api/auth/logout/',
-                    action='DELETE',
+                    action='POST',
                     description='User Logout'
                 )
             },

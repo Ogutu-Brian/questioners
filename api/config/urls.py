@@ -58,7 +58,6 @@ urlpatterns = [
     path('api/schema/swagger/', schema_view_swagger),
     path('api/browser/', api_browser_urls),
     path('api/admin/', admin.site.urls),
-    path('socialauth/', oauth2_urls),
 ]
 
 urlpatterns += router.urls

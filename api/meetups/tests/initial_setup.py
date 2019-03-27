@@ -10,6 +10,8 @@ import os
 from typing import Dict
 from rest_framework.views import Response
 from django.utils import timezone
+from rest_framework.authtoken.models import Token
+
 
 
 class TestSetUp(TestCase):
@@ -90,13 +92,14 @@ class TestSetUp(TestCase):
         """
         Force authenticates an admin user for testing
         """
-        self.client.force_authenticate(user=self.admin)
-
+        token, created = Token.objects.get_or_create(user=self.admin)
+        return self.client.credentials(HTTP_AUTHORIZATION="token " + token.key)
     def force_authenticate_user(self) -> None:
         """
         Force authenticates mormal user for testing
         """
-        self.client.force_authenticate(user=self.user)
+        token, created = Token.objects.get_or_create(user=self.user)
+        return self.client.credentials(HTTP_AUTHORIZATION="token " + token.key)
 
     def clear_meetups(self) -> None:
         """
