@@ -21,6 +21,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         style={'input_type': 'password'}, write_only=True)
 
     token = serializers.SerializerMethodField()
+    uid = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -28,7 +29,8 @@ class SignUpSerializer(serializers.ModelSerializer):
             User._meta.pk.name,
             'email',
             'password',
-            'token'
+            'token',
+            'uid'
         )
 
     def validate(self, attrs):
@@ -64,6 +66,9 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def get_token(self, token):
         return default_token_generator.make_token(token)
+
+    def get_uid(self, user):
+        return utils.encode_uid(user.pk)
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
