@@ -177,7 +177,6 @@ class ResendActivationView(utils.ActionViewMixin, generics.GenericAPIView):
 class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
     serializer_class = serializers.UidAndTokenQueryParamsSerializer
     permission_classes = [permissions.AllowAny]
-    token_generator = default_token_generator
 
     def get(self, serializer):
         user = serializer.user
