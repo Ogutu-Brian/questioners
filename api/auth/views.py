@@ -179,7 +179,7 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     token_generator = default_token_generator
 
-    def _action(self, serializer):
+    def get(self, serializer):
         user = serializer.user
         if user.is_active:
             raise exceptions.AlreadyProcessed(
