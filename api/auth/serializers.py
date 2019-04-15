@@ -107,9 +107,7 @@ class EmailAccountSerializer(serializers.Serializer):
                 _('User account with given email does not exist.'))
 
 
-class UidAndTokenSerializer(serializers.Serializer):
-    uid = serializers.CharField()
-    token = serializers.CharField()
+class UidAndTokenQueryParamsSerializer(serializers.Serializer):
 
     default_error_messages = {
         'invalid_token': _('The provided token for the user is not valid.'),
@@ -117,12 +115,12 @@ class UidAndTokenSerializer(serializers.Serializer):
     }
 
     def __init__(self, *args, **kwargs):
-        super(UidAndTokenSerializer, self).__init__(*args, **kwargs)
+        super(UidAndTokenQueryParamsSerializer, self).__init__(*args, **kwargs)
         self.user = None
 
     def validate_uid(self, value):
         try:
-            uid = utils.decode_uid(value)
+            uid = value
             self.user = User.objects.get(pk=uid)
         except (User.DoesNotExist, ValueError, TypeError, OverflowError):
             self.fail('invalid_uid')
@@ -130,9 +128,12 @@ class UidAndTokenSerializer(serializers.Serializer):
         return value
 
     def validate(self, attrs):
-        attrs = super(UidAndTokenSerializer, self).validate(attrs)
+        uid= self.context['request'].query_params.get('uid')
+        token = self.context['request'].query_params.get('token')
+        # validate uid
+        self.validate_uid(uid)
         is_token_valid = self.context['view'].token_generator.check_token(
-            self.user, attrs['token'])
+            self.user, token)
         if not is_token_valid:
             self.fail('invalid_token')
 
