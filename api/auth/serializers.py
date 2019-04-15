@@ -120,7 +120,7 @@ class UidAndTokenQueryParamsSerializer(serializers.Serializer):
 
     def validate_uid(self, value):
         try:
-            uid = value
+            uid = utils.decode_uid(value)
             self.user = User.objects.get(pk=uid)
         except (User.DoesNotExist, ValueError, TypeError, OverflowError):
             self.fail('invalid_uid')
