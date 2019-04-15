@@ -253,17 +253,6 @@ class ChangeEmailSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', )
 
-
-class PasswordResetConfirmSerializer(UidAndTokenSerializer,
-                                     PasswordSerializer):
-    pass
-
-
-class PasswordResetConfirmRetypeSerializer(UidAndTokenSerializer,
-                                           PasswordRetypeSerializer):
-    pass
-
-
 class SocialAuthSerializer(serializers.Serializer):
     """ Accepts id token"""
     id_token = serializers.CharField(
