@@ -181,28 +181,20 @@ class ActivationView(APIView):
         'invalid_uid': _('Invalid user id, the user does not exist.'),
     }
 
-    def validate_uid(self, uid):
-        try:
-            uuid = utils.decode_uid(uid)
-            self.user = User.objects.get(pk=uuid)
-        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
-            self.fail('invalid_uid')
-
-        return self.user
-
-    def validate_token(self, token):
-        is_token_valid = default_token_generator.check_token(
-            self.user, token)
-        if not is_token_valid:
-            self.fail('invalid_token')
-
-        return is_token_valid
-
     def get(self, request):
         uid = request.GET['uid']
         token = request.GET['token']
-        self.validate_uid(uid)
-        self.validate_token(token)
+        try:
+            uuid = utils.decode_uid(uid)
+            self.user = User.objects.get(pk=uuid)
+        except:
+            raise exceptions.NotFound(_(self.default_error_messages['invalid_uid']))
+
+        is_token_valid = default_token_generator.check_token(
+            self.user, token)
+        if not is_token_valid:
+            raise exceptions.NotFound(_(self.default_error_messages['invalid_token']))
+        
         user = self.user
         if user.is_active:
             raise exceptions.AlreadyProcessed(

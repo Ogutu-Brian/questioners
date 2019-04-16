@@ -84,32 +84,4 @@ class TestPasswordReset(APITestCase):
         self.response = self.client.post(self.url, data, format="json")
         user_id, token = self.response.context['uid'], self.response.context['token']
         return user_id, token
-
-
-    def test_reset_password(self):
-        """
-        tests for reset password
-        """
-
-        data = self.user_details()
-        self.activation_data = {
-            "uid": data[0],
-            "token": data[1]
-        }
-
-        #reset confirm password
-        self.reset_confirm_data = {
-            "uid": self.activation_data['uid'],
-            "token": self.activation_data['token'],
-            "new_password": "mynewpassword",
-            "re_new_password": "mynewpassword"
-        }
-
-        self.response = self.client.post(self.reset_url,
-            self.reset_confirm_data,
-            format="json"
-        )
-
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.response.content, b'{"message":"password successfully reset"}')
         
