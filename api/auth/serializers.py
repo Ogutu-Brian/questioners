@@ -107,45 +107,6 @@ class EmailAccountSerializer(serializers.Serializer):
                 _('User account with given email does not exist.'))
 
 
-class UidAndTokenQueryParamsSerializer(serializers.Serializer):
-
-    default_error_messages = {
-        'invalid_token': _('The provided token for the user is not valid.'),
-        'invalid_uid': _('Invalid user id, the user does not exist.'),
-    }
-
-    def getparams(self):
-        self.uid= self.context['request'].query_params.get('uid')
-        self.token = self.context['request'].query_params.get('token')
-        print(self.uid)
-
-        return self.uid, self.token
-
-    def __init__(self, *args, **kwargs):
-        super(UidAndTokenQueryParamsSerializer, self).__init__(*args, **kwargs)
-        self.user = None
-
-    def validate_uid(self, value):
-        try:
-            value = self.uid
-            uid = utils.decode_uid(value)
-            self.user = User.objects.get(pk=uid)
-        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
-            self.fail('invalid_uid')
-
-        return value
-
-    def validate(self, attrs):
-        # validate uid
-        self.validate_uid(self.uid)
-        is_token_valid = self.context['view'].token_generator.check_token(
-            self.user, self.token)
-        if not is_token_valid:
-            self.fail('invalid_token')
-
-        return attrs
-
-
 class TokenSerializer(serializers.ModelSerializer):
     auth_token = serializers.CharField(source='key')
 

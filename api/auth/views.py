@@ -174,12 +174,36 @@ class ResendActivationView(utils.ActionViewMixin, generics.GenericAPIView):
         mailer.ActivationEmail(self.request, context, recipient).send()
 
 
-class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
-    serializer_class = serializers.UidAndTokenQueryParamsSerializer
+class ActivationView(APIView):
     permission_classes = [permissions.AllowAny]
+    default_error_messages = {
+        'invalid_token': _('The provided token for the user is not valid.'),
+        'invalid_uid': _('Invalid user id, the user does not exist.'),
+    }
 
-    def get(self, serializer):
-        user = serializer.user
+    def validate_uid(self, uid):
+        try:
+            uuid = utils.decode_uid(uid)
+            self.user = User.objects.get(pk=uuid)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            self.fail('invalid_uid')
+
+        return self.user
+
+    def validate_token(self, token):
+        is_token_valid = default_token_generator.check_token(
+            self.user, token)
+        if not is_token_valid:
+            self.fail('invalid_token')
+
+        return is_token_valid
+
+    def get(self, request):
+        uid = request.GET['uid']
+        token = request.GET['token']
+        self.validate_uid(uid)
+        self.validate_token(token)
+        user = self.user
         if user.is_active:
             raise exceptions.AlreadyProcessed(
                 _('The user account is already active.'))
@@ -194,8 +218,9 @@ class ActivationView(utils.ActionViewMixin, generics.GenericAPIView):
             context = {'user': user}
             recipient = [get_user_email(user)]
             mailer.ConfirmationEmail(self.request, context, recipient).send()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        data = {'Your account has been activated'}
+        return Response(data=data, status=status.HTTP_204_NO_CONTENT)
 
 
 class LoginView(utils.ActionViewMixin, generics.GenericAPIView):
