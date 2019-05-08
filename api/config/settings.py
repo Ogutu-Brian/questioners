@@ -168,7 +168,7 @@ JWT_AUTH = {
 DJOSER = {
     'LOGIN_URL': 'api/auth/login/',
     'PASSWORD_RESET_CONFIRM_URL': 'auth/password/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'api/auth/activate?uid={uid}&token={token}',
+    'ACTIVATION_URL': 'api/auth/activate?uid={uid}$token={token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'SEND_ACTIVATION_SMS': True,
