@@ -37,7 +37,7 @@ django-rest-passwordreset==0.9.7
 django-rest-swagger==2.1.2
 django-settings-export==1.2.1
 django-templated-mail==1.1.1
-djangorestframework==3.8.2
+djangorestframework==3.9.1
 djangorestframework-jwt==1.11.0
 djoser==1.5.1
 docopt==0.6.2
