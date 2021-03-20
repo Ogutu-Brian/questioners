@@ -59,7 +59,7 @@ ipython-genutils==0.2.0
 isort==4.3.10
 itypes==1.1.0
 jedi==0.13.1
-Jinja2==2.10
+Jinja2==2.11.3
 JSON-Datetime==0.0.5
 jsonschema==3.0.1
 lazy-object-proxy==1.3.1
