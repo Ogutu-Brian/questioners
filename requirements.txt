@@ -115,7 +115,7 @@ redis==2.10.6
 requests==2.20.0
 requests-oauthlib==1.2.0
 responses==0.10.5
-rsa==4.0
+rsa==4.1
 ruamel.yaml==0.15.89
 simplegeneric==0.8.1
 simplejson==3.16.0
